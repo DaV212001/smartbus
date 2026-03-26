@@ -3,11 +3,11 @@ import 'dart:math' as Math;
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:logger/logger.dart';
-import 'package:trip_cs_passenger/constants/constants.dart';
-import 'package:trip_cs_passenger/utils/wrappers/shimmer_wrapper.dart';
 
+import '../../constants/constants.dart';
 import '../../models/route.dart' as r;
 import '../../models/stop_tcs.dart';
+import '../../utils/wrappers/shimmer_wrapper.dart';
 
 class RouteCard extends StatelessWidget {
   final r.Route route;
@@ -28,13 +28,10 @@ class RouteCard extends StatelessWidget {
           children: [
             if (route.stops != null && route.stops!.isNotEmpty)
               SizedBox(
-                height: MediaQuery.of(context).size.height *
+                height:
+                    MediaQuery.of(context).size.height *
                     0.15, // Map preview height
-                child: IgnorePointer(
-                  child: RouteMapPreview(
-                    route: route,
-                  ),
-                ),
+                child: IgnorePointer(child: RouteMapPreview(route: route)),
               ),
             const SizedBox(height: 10.0),
             Padding(
@@ -55,9 +52,7 @@ class RouteCard extends StatelessWidget {
                   Row(
                     children: [
                       Icon(Icons.compare_arrows_sharp, color: maincolor),
-                      const SizedBox(
-                        width: 5,
-                      ),
+                      const SizedBox(width: 5),
                       Text(
                         "${route.distance?.toStringAsFixed(2) ?? '-'} km,",
                         style: smallTextStyle,
@@ -66,14 +61,8 @@ class RouteCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(
-                        Icons.timelapse,
-                        color: maincolor,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
+                      Icon(Icons.timelapse, color: maincolor, size: 15),
+                      const SizedBox(width: 5),
                       Text(
                         "${route.duration?.toStringAsFixed(2) ?? '-'} mins",
                         style: smallTextStyle,
@@ -109,10 +98,12 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
 
     _mapController = MapController(
       initPosition: GeoPoint(
-        latitude: ((widget.route.stops!.first.latitude ?? 0) +
+        latitude:
+            ((widget.route.stops!.first.latitude ?? 0) +
                 (widget.route.stops!.last.latitude ?? 0)) /
             2,
-        longitude: ((widget.route.stops!.first.longitude ?? 0) +
+        longitude:
+            ((widget.route.stops!.first.longitude ?? 0) +
                 (widget.route.stops!.last.longitude ?? 0)) /
             2,
       ),
@@ -132,10 +123,10 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
 
     List<GeoPoint> geoPoints = widget.route.stops!
         .where((stop) => stop.latitude != null && stop.longitude != null)
-        .map((stop) => GeoPoint(
-              latitude: stop.latitude!,
-              longitude: stop.longitude!,
-            ))
+        .map(
+          (stop) =>
+              GeoPoint(latitude: stop.latitude!, longitude: stop.longitude!),
+        )
         .toList();
 
     await _mapController.goToLocation(geoPoints.first);
@@ -154,7 +145,9 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
         geoPoints.first,
         markerIcon: MarkerIcon(
           iconWidget: _buildMarkerLabel(
-              widget.route.stops?.first.nameEn ?? 'Start', maincolor),
+            widget.route.stops?.first.nameEn ?? 'Start',
+            maincolor,
+          ),
         ),
       );
 
@@ -163,7 +156,9 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
         geoPoints.last,
         markerIcon: MarkerIcon(
           iconWidget: _buildMarkerLabel(
-              widget.route.stops?.last.nameEn ?? 'End', Colors.black),
+            widget.route.stops?.last.nameEn ?? 'End',
+            Colors.black,
+          ),
         ),
       );
       for (int i = 0; i < geoPoints.length - 1; i++) {
@@ -197,7 +192,8 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
 
     final dLon = lon2 - lon1;
     final y = Math.sin(dLon) * Math.cos(lat2);
-    final x = Math.cos(lat1) * Math.sin(lat2) -
+    final x =
+        Math.cos(lat1) * Math.sin(lat2) -
         Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 
     final bearing = Math.atan2(y, x);
@@ -211,11 +207,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
         color: color,
         borderRadius: BorderRadius.circular(8),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2)),
         ],
       ),
       child: Text(
@@ -236,10 +228,11 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
     if (stop.latitude == null || stop.longitude == null) return;
 
     GeoPoint point = GeoPoint(
-        latitude: stop.latitude! +
-            0.00005 //offset to avoid removing the arrows on this stop
-        ,
-        longitude: stop.longitude!);
+      latitude:
+          stop.latitude! +
+          0.00005, //offset to avoid removing the arrows on this stop
+      longitude: stop.longitude!,
+    );
 
     // Move the map camera
     await _mapController.goToLocation(point);
@@ -264,21 +257,22 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
                   color: stop.sequence == 1
                       ? maincolor
                       : isDestination
-                          ? Colors.black
-                          : Colors.white,
+                      ? Colors.black
+                      : Colors.white,
                   // borderRadius: BorderRadius.circular(10),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: isDestination
-                          ? Colors.black
-                          : const Color(0xFF6D28D9),
-                      width: 2),
+                    color: isDestination
+                        ? Colors.black
+                        : const Color(0xFF6D28D9),
+                    width: 2,
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 4,
                       offset: Offset(2, 2),
-                    )
+                    ),
                   ],
                 ),
                 child: Padding(
@@ -306,7 +300,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
                       color: Colors.black26,
                       blurRadius: 4,
                       offset: Offset(2, 2),
-                    )
+                    ),
                   ],
                 ),
                 child: Padding(
@@ -320,7 +314,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -336,11 +330,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
     return OSMFlutter(
       controller: _mapController,
       osmOption: const OSMOption(
-        zoomOption: ZoomOption(
-          initZoom: 7,
-          minZoomLevel: 2,
-          maxZoomLevel: 18,
-        ),
+        zoomOption: ZoomOption(initZoom: 7, minZoomLevel: 2, maxZoomLevel: 18),
         showDefaultInfoWindow: true,
         isPicker: false,
       ),

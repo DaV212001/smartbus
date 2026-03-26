@@ -25,7 +25,7 @@ class _LanguageSelectorButtonState extends State<LanguageSelectorButton> {
     // final bool isTablet = ScreenUtils.isTablet(context);
     ThemeData theme = Theme.of(context);
     return DropdownButtonHideUnderline(
-      child: DropdownButton2(
+      child: DropdownButton2<Language>(
         customButton: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
@@ -33,24 +33,24 @@ class _LanguageSelectorButtonState extends State<LanguageSelectorButton> {
               Text(
                 ThemeModeController.getLanguage(),
                 style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
               SizedBox(width: 5.w),
-              const Icon(Icons.expand_circle_down, color: Colors.white)
+              const Icon(Icons.expand_circle_down, color: Colors.white),
             ],
           ),
         ),
         items: [
           ...Language.languages.map(
-            (item) => DropdownMenuItem<Language>(
+            (item) => DropdownItem<Language>(
               value: item,
-              child: Text(item.name,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                  )),
+              child: Text(
+                item.name,
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],
@@ -66,13 +66,11 @@ class _LanguageSelectorButtonState extends State<LanguageSelectorButton> {
         dropdownStyleData: DropdownStyleData(
           width: 160,
           padding: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           offset: const Offset(0, 8),
         ),
         menuItemStyleData: MenuItemStyleData(
-          customHeights: List<double>.filled(Language.languages.length, 48),
+          // customHeights: List<double>.filled(Language.languages.length, 48),
           padding: const EdgeInsets.only(left: 16, right: 16),
         ),
       ),
