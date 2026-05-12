@@ -39,7 +39,7 @@ class RouteCard extends StatelessWidget {
               child: Text(
                 route.name ?? "Unnamed Route",
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),

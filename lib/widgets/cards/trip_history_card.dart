@@ -63,11 +63,15 @@ class TripHistoryCard extends StatelessWidget {
                               Icons.location_on,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            Text(trip.departureStop!.nameEn!),
+                            Text(
+                              trip.departureStop!.nameEn!,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                             Text(
                               DateFormat(
                                 'hh:mm a',
                               ).format(trip.departureDateTime!),
+                              style: const TextStyle(fontSize: 11),
                             ),
                           ],
                         ),
@@ -104,11 +108,15 @@ class TripHistoryCard extends StatelessWidget {
                               Icons.location_on,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            Text(trip.destinationStop!.nameEn!),
+                            Text(
+                              trip.destinationStop!.nameEn!,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                             Text(
                               DateFormat(
                                 'hh:mm a',
                               ).format(trip.destinationDateTime!),
+                              style: const TextStyle(fontSize: 11),
                             ),
                           ],
                         ),
@@ -169,6 +177,7 @@ class TripHistoryCard extends StatelessWidget {
                                   children: [
                                     Text(
                                       '${trip.driver!.firstName!} ${trip.driver!.lastName!}',
+                                      style: const TextStyle(fontSize: 13),
                                     ),
                                   ],
                                 ),

@@ -60,9 +60,7 @@ class ProfileListCard extends StatelessWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-      ),
+      decoration: BoxDecoration(borderRadius: borderRadius),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -77,14 +75,12 @@ class ProfileListCard extends StatelessWidget {
                   blurRadius: blurRadius,
                   color: shadowColor,
                   offset: boxShadowOffset,
-                )
+                ),
               ],
             ),
             child: Material(
               color: Theme.of(context).cardColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: borderRadius,
-              ),
+              shape: RoundedRectangleBorder(borderRadius: borderRadius),
               child: InkWell(
                 borderRadius: borderRadius,
                 onTap: onTap,
@@ -95,10 +91,7 @@ class ProfileListCard extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 20),
-                            child: Icon(
-                              icon,
-                              color: maincolor,
-                            ),
+                            child: Icon(icon, color: maincolor),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 25),
@@ -110,10 +103,7 @@ class ProfileListCard extends StatelessWidget {
                     if (bottomDivider == true)
                       const Padding(
                         padding: EdgeInsets.only(left: 65, right: 25),
-                        child: Divider(
-                          thickness: 0.5,
-                          height: 1,
-                        ),
+                        child: Divider(thickness: 0.5, height: 1),
                       ),
                   ],
                 ),

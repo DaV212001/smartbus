@@ -13,8 +13,11 @@ class DioService {
   }) async {
     Response response = Response(requestOptions: RequestOptions());
     try {
-      response = await (await DioConfig.dio())
-          .post(path, options: options, data: data);
+      response = await (await DioConfig.dio()).post(
+        path,
+        options: options,
+        data: data,
+      );
       Logger().d(response.statusCode);
       Logger().d(response.data);
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -38,11 +41,17 @@ class DioService {
     Object? data,
     Function(Response)? onSuccess,
     Function(Object, Response)? onFailure,
+    Map<String, String>? queryParameters,
   }) async {
-    Response response = Response(requestOptions: RequestOptions());
+    Response response = Response(
+      requestOptions: RequestOptions(queryParameters: queryParameters),
+    );
     try {
-      response =
-          await (await DioConfig.dio()).get(path, options: options, data: data);
+      response = await (await DioConfig.dio()).get(
+        path,
+        options: options,
+        data: data,
+      );
       print(response.data);
       Logger().d(response.data);
       if (response.statusCode == 200) {

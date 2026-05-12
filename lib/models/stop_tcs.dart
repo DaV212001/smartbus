@@ -7,6 +7,9 @@ class Stop {
   final String? nameAm;
   final num? sequence;
   final num? distanceFromPreviousStop;
+  final num? distanceToNext;
+  final num? durationFromPrevious;
+  final num? durationToNext;
   final double? latitude;
   final double? longitude;
 
@@ -18,18 +21,30 @@ class Stop {
     this.nameEn,
     this.latitude,
     this.longitude,
+    this.distanceToNext,
+    this.durationFromPrevious,
+    this.durationToNext,
   });
 
-  factory Stop.fromJson(Map<String, dynamic> json,
-      {required bool isDeparture, required bool isDestination}) {
+  factory Stop.fromJson(
+    Map<String, dynamic> json, {
+    required bool isDeparture,
+    required bool isDestination,
+  }) {
     // List<dynamic> names = (json['names'] as List);
     return Stop(
       id: json['id'],
-      nameEn: json['nameEn'],
-      nameAm: json['nameAm'],
+      nameEn: json['name'],
+      nameAm: json['name'],
       sequence: json['sequence'],
-      distanceFromPreviousStop:
-          double.tryParse((json['distanceFromPreviousStop']).toString()),
+      distanceToNext: double.tryParse((json['distanceToNext']).toString()),
+      durationFromPrevious: double.tryParse(
+        (json['durationFromPrevious']).toString(),
+      ),
+      durationToNext: double.tryParse((json['durationToNext']).toString()),
+      distanceFromPreviousStop: double.tryParse(
+        (json['distanceFromPreviousStop']).toString(),
+      ),
       latitude: double.tryParse((json['latitude']).toString()),
       longitude: double.tryParse((json['longitude']).toString()),
     );

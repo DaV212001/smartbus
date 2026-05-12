@@ -27,15 +27,34 @@ class ConfigPreference {
   static const String _userToken = 'user_token';
   // static const String _accessToken = 'access_token';
 
-  static Future<void> setTokens(dynamic data, String accessToken,
-      String refreshToken, int expiresIn) async {
-    final expiryTimestamp =
-        DateTime.now().add(Duration(seconds: expiresIn)).millisecondsSinceEpoch;
+  static Future<void> setTokens(
+    dynamic data,
+    String accessToken,
+    String refreshToken,
+    int expiresIn,
+  ) async {
+    final expiryTimestamp = DateTime.now()
+        .add(Duration(seconds: expiresIn))
+        .millisecondsSinceEpoch;
 
     await sharedPreferencesInstance.setString(_accessToken, accessToken);
     await sharedPreferencesInstance.setString(_refreshToken, refreshToken);
     await sharedPreferencesInstance.setInt(_accessTokenExpiry, expiryTimestamp);
     await sharedPreferencesInstance.setString(_userToken, json.encode(data));
+  }
+
+  static Future<void> updateTokens(
+    String accessToken,
+    String refreshToken,
+    int expiresIn,
+  ) async {
+    final expiryTimestamp = DateTime.now()
+        .add(Duration(seconds: expiresIn))
+        .millisecondsSinceEpoch;
+
+    await sharedPreferencesInstance.setString(_accessToken, accessToken);
+    await sharedPreferencesInstance.setString(_refreshToken, refreshToken);
+    await sharedPreferencesInstance.setInt(_accessTokenExpiry, expiryTimestamp);
   }
 
   static bool isAccessTokenExpired() {
@@ -96,11 +115,11 @@ class ConfigPreference {
   static String getLanguage() =>
       sharedPreferencesInstance.getString(_appLanguageCode) ?? 'en';
 
-  static Future<void> setAppLanguageCountryCode(
-    String appLanguageCountry,
-  ) =>
+  static Future<void> setAppLanguageCountryCode(String appLanguageCountry) =>
       sharedPreferencesInstance.setString(
-          _appLanguageCountryCode, appLanguageCountry);
+        _appLanguageCountryCode,
+        appLanguageCountry,
+      );
 
   static Future<void> setAccessToken(String token) =>
       sharedPreferencesInstance.setString(_accessToken, token);
@@ -132,10 +151,11 @@ class ConfigPreference {
 
   /// clear all data from shared pref
   static Future<void> clear() async => await sharedPreferencesInstance.clear();
-  static Future<void> logOut() async => sharedPreferencesInstance
-    ..getKeys().forEach((key) {
-      if (key != 'is_first_launch' && key != 'is_theme_light') {
-        ConfigPreference.getStorage().remove(key);
-      }
-    });
+  static Future<void> logOut() async =>
+      sharedPreferencesInstance
+        ..getKeys().forEach((key) {
+          if (key != 'is_first_launch' && key != 'is_theme_light') {
+            ConfigPreference.getStorage().remove(key);
+          }
+        });
 }

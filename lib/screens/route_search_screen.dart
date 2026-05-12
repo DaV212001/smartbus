@@ -1,121 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controllers/route_controller.dart';
+import '../widgets/cards/route_card_standard.dart';
 
 class RouteSearchScreen extends StatelessWidget {
   const RouteSearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final routeController = Get.find<RouteController>();
+    final searchController = TextEditingController();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).iconTheme.color,
+          ),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
+          "Find Route",
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // _header(),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
-                  children: [_searchSection(), _sectionHeader(), _routeList()],
+                  children: [
+                    _searchSection(context, routeController, searchController),
+                    _sectionHeader(context),
+                    _routeList(context, routeController),
+                  ],
                 ),
               ),
             ),
           ],
         ),
       ),
-      // bottomNavigationBar: _bottomNav(),
-    );
-  }
-
-  // ================= HEADER =================
-  Widget _header() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0x14000000))),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Color(0xFF0066CC),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.directions_bus,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                "AddisBus",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0066CC),
-                ),
-              ),
-            ],
-          ),
-          CircleAvatar(
-            backgroundColor: Color(0xFFF3F7FF),
-            child: Icon(Icons.person, color: Colors.black),
-          ),
-        ],
-      ),
     );
   }
 
   // ================= SEARCH =================
-  Widget _searchSection() {
+  Widget _searchSection(
+    BuildContext context,
+    RouteController controller,
+    TextEditingController textController,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+        border: Border(
+          // bottom: BorderSide(color: Theme.of(context).dividerColor),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Where to?",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+            ),
           ),
           const SizedBox(height: 16),
           Stack(
             children: [
               // Connector line
               Positioned(
-                left: 18,
+                left: 23,
                 top: 30,
                 bottom: 30,
-                child: Container(width: 2, color: Color(0x14000000)),
+                child: Container(
+                  width: 2,
+                  color: Theme.of(context).dividerColor,
+                ),
               ),
               Column(
-                children: const [
-                  _SearchField(icon: Icons.circle, hint: "Departure Stop"),
-                  SizedBox(height: 12),
+                children: [
+                  _SearchField(
+                    icon: Icons.circle,
+                    hint: "Departure Stop",
+                    context: context,
+                  ),
+                  const SizedBox(height: 12),
                   _SearchField(
                     icon: Icons.location_on,
                     hint: "Destination Stop",
+                    context: context,
                   ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 16),
-          _filters(),
+          _filters(context),
         ],
       ),
     );
   }
 
-  Widget _filters() {
+  Widget _filters(BuildContext context) {
     final filters = ["Lowest Price", "Fastest", "Route #"];
 
     return SizedBox(
@@ -129,14 +130,21 @@ class RouteSearchScreen extends StatelessWidget {
             margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: active ? Color(0xFF0066CC) : Color(0xFFF3F7FF),
+              color: active
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(20),
+              border: active
+                  ? null
+                  : Border.all(color: Theme.of(context).dividerColor),
             ),
             alignment: Alignment.center,
             child: Text(
               filters[i],
               style: TextStyle(
-                color: active ? Colors.white : Colors.black,
+                color: active
+                    ? Colors.white
+                    : Theme.of(context).textTheme.bodyMedium?.color,
                 fontSize: 13,
               ),
             ),
@@ -147,54 +155,53 @@ class RouteSearchScreen extends StatelessWidget {
   }
 
   // ================= SECTION =================
-  Widget _sectionHeader() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+  Widget _sectionHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           "Available Routes",
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).textTheme.titleMedium?.color,
+          ),
         ),
       ),
     );
   }
 
   // ================= ROUTES =================
-  Widget _routeList() {
-    return Column(
-      children: const [
-        RouteCard2(
-          route: "Route 12",
-          price: "5.00 ETB",
-          start: "Bole",
-          end: "Piazza",
-          duration: "45m",
-          stops: "12 stops",
-          frequency: "Every 15 min",
-          offline: true,
+  Widget _routeList(BuildContext context, RouteController controller) {
+    return Obx(() {
+      final list =
+          controller.searchResults.isEmpty && !controller.isLoading.value
+          ? controller.routes
+          : controller.searchResults;
+
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: list.map((route) {
+            return RouteCardStandard(
+              routeId: route.id?.toString() ?? '',
+              routeName: route.routeNumber ?? 'Route',
+              fare: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
+              startStop: route.startStopName ?? 'Start',
+              endStop: route.endStopName ?? 'End',
+              duration: "${route.duration ?? '0'}m",
+              stopsCount: "${route.totalStops ?? '0'} stops",
+              frequency: "Every 15 min",
+            );
+          }).toList(),
         ),
-        RouteCard2(
-          route: "Route 04",
-          price: "4.00 ETB",
-          start: "Megenagna",
-          end: "Stadium",
-          duration: "30m",
-          stops: "8 stops",
-          frequency: "Every 10 min",
-        ),
-        RouteCard2(
-          route: "Route 22",
-          price: "3.50 ETB",
-          start: "Mexico",
-          end: "Piassa",
-          duration: "25m",
-          stops: "6 stops",
-          frequency: "Every 20 min",
-          offline: true,
-        ),
-      ],
-    );
+      );
+    });
   }
 
   // ================= NAV =================
@@ -220,117 +227,44 @@ class RouteSearchScreen extends StatelessWidget {
 class _SearchField extends StatelessWidget {
   final IconData icon;
   final String hint;
+  final BuildContext context;
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
 
-  const _SearchField({required this.icon, required this.hint});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.only(left: 44, right: 16),
-      decoration: BoxDecoration(
-        color: Color(0xFFF6F7F9),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: Alignment.centerLeft,
-      child: Stack(
-        children: [
-          Positioned(
-            left: -28,
-            child: Icon(icon, size: 16, color: Color(0xFF0066CC)),
-          ),
-          Text(hint, style: const TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-}
-
-// ================= ROUTE CARD =================
-class RouteCard2 extends StatelessWidget {
-  final String route, price, start, end, duration, stops, frequency;
-  final bool offline;
-
-  const RouteCard2({
-    super.key,
-    required this.route,
-    required this.price,
-    required this.start,
-    required this.end,
-    required this.duration,
-    required this.stops,
-    required this.frequency,
-    this.offline = false,
+  const _SearchField({
+    required this.icon,
+    required this.hint,
+    required this.context,
+    this.controller,
+    this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      padding: const EdgeInsets.all(16),
+      height: 48,
       decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-        border: Border.all(color: Color(0x14000000)),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Color(0xFF0066CC),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(route, style: const TextStyle(color: Colors.white)),
-              ),
-              Text(price, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+          prefixIcon: Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).primaryColor,
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Text(start),
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(height: 2, color: Colors.grey.shade300),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      color: Colors.white,
-                      child: Text(
-                        duration,
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(end),
-            ],
-          ),
-          const Divider(),
-          Row(
-            children: [
-              const Icon(Icons.directions_bus, size: 14),
-              const SizedBox(width: 4),
-              Text(frequency),
-              const SizedBox(width: 12),
-              const Icon(Icons.map, size: 14),
-              const SizedBox(width: 4),
-              Text(stops),
-              if (offline) ...[
-                const Spacer(),
-                const Icon(Icons.check_circle, size: 14, color: Colors.green),
-                const SizedBox(width: 4),
-                const Text("Offline", style: TextStyle(color: Colors.green)),
-              ],
-            ],
-          ),
-        ],
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        ),
       ),
     );
   }

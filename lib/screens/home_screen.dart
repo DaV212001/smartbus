@@ -1,43 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../screens/route_detail_screen.dart';
-import '../screens/route_search_screen.dart';
+import '../controllers/route_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final routeController = Get.put(RouteController());
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FBFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             _buildSearchBar(context),
-            _buildFilters(),
-            _buildSectionTitle(),
-            Expanded(child: _buildRouteList()),
+            _buildFilters(context),
+            _buildSectionTitle(context),
+            Expanded(child: _buildRouteList(context)),
           ],
         ),
       ),
-      // bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             "SmartBus",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+            ),
           ),
           CircleAvatar(
-            backgroundColor: Color(0xFFEAF4FF),
-            child: Icon(Icons.person, color: Colors.black),
+            backgroundColor: Theme.of(context).cardColor,
+            child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
           ),
         ],
       ),
@@ -46,27 +50,26 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildSearchBar(BuildContext context) {
     return GestureDetector(
-      onTap: () => {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RouteSearchScreen()),
-        ),
-      },
+      onTap: () => Get.toNamed('/route-search'),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Color(0xFFEAF4FF),
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(8),
+            // border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             children: const [
-              Icon(Icons.search, color: Colors.grey),
+              Icon(Icons.search, color: Color(0xFF94A3B8)),
               SizedBox(width: 12),
-              Text(
-                "Search route, stop, or destination",
-                style: TextStyle(color: Colors.grey),
+              Expanded(
+                child: Text(
+                  "Search route, stop, or destination",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Color(0xFF94A3B8)),
+                ),
               ),
             ],
           ),
@@ -75,11 +78,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(BuildContext context) {
     final filters = ["All Routes", "Price", "Recent", "Saved"];
 
     return SizedBox(
-      height: 50,
+      height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -88,15 +91,28 @@ class HomeScreen extends StatelessWidget {
           final isActive = index == 0;
           return Container(
             margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
-              color: isActive ? Color(0xFF0B66B2) : Color(0xFFEAF4FF),
-              borderRadius: BorderRadius.circular(20),
+              color: isActive
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: isActive
+                  ? null
+                  : Border.all(
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.15),
+                    ),
             ),
             alignment: Alignment.center,
             child: Text(
               filters[index],
-              style: TextStyle(color: isActive ? Colors.white : Colors.black),
+              style: TextStyle(
+                color: isActive
+                    ? Colors.white
+                    : Theme.of(context).textTheme.bodyLarge?.color,
+              ),
             ),
           );
         },
@@ -104,57 +120,54 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
+  Widget _buildSectionTitle(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           "Available Routes",
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).textTheme.titleMedium?.color,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRouteList() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      children: const [
-        RouteCard(
-          route: "Route 12",
-          price: "10 ETB",
-          start: "Piazza Terminal",
-          end: "Bole Airport",
-          duration: "45 mins",
-          stops: "14 stops",
+  Widget _buildRouteList(BuildContext context) {
+    final routeController = Get.find<RouteController>();
+    return Obx(() {
+      if (routeController.isLoading.value && routeController.routes.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (routeController.routes.isEmpty) {
+        return const Center(child: Text("No routes available"));
+      }
+
+      return RefreshIndicator(
+        onRefresh: routeController.fetchRoutes,
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: routeController.routes.length,
+          itemBuilder: (context, index) {
+            final route = routeController.routes[index];
+            return RouteCard(
+              routeId: route.id?.toString() ?? '',
+              route: route.routeNumber ?? 'Route',
+              price: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
+              start: route.startStopName ?? 'Start',
+              end: route.endStopName ?? 'End',
+              duration: "${route.duration ?? '0'} mins",
+              stops: "${route.totalStops ?? '0'} stops",
+            );
+          },
         ),
-        RouteCard(
-          route: "Route 34",
-          price: "8 ETB",
-          start: "Mexico Square",
-          end: "Megenagna",
-          duration: "30 mins",
-          stops: "9 stops",
-        ),
-        RouteCard(
-          route: "Route 7",
-          price: "5 ETB",
-          start: "Tor Hailoch",
-          end: "4 Kilo",
-          duration: "25 mins",
-          stops: "6 stops",
-        ),
-        RouteCard(
-          route: "Route 22",
-          price: "12 ETB",
-          start: "Merkato",
-          end: "Gotera",
-          duration: "40 mins",
-          stops: "11 stops",
-        ),
-      ],
-    );
+      );
+    });
   }
 
   Widget _buildBottomNav() {
@@ -176,10 +189,11 @@ class HomeScreen extends StatelessWidget {
 }
 
 class RouteCard extends StatelessWidget {
-  final String route, price, start, end, duration, stops;
+  final String routeId, route, price, start, end, duration, stops;
 
   const RouteCard({
     super.key,
+    required this.routeId,
     required this.route,
     required this.price,
     required this.start,
@@ -191,19 +205,23 @@ class RouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => RouteDetailScreen()),
-        );
-      },
+      onTap: () => Get.toNamed(
+        '/route-detail',
+        arguments: {
+          'routeId': routeId,
+          'route': route,
+          'price': price,
+          'start': start,
+          'end': end,
+        },
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black12),
-          color: Colors.white,
+          border: Border.all(color: Theme.of(context).dividerColor),
+          color: Theme.of(context).cardColor,
         ),
         child: Column(
           children: [
@@ -216,14 +234,20 @@ class RouteCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Color(0xFFFFF3CD),
+                    color: Color(0xFFFFD166),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(route),
+                  child: Text(
+                    route,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
                 Text(
                   price,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
                 ),
               ],
             ),
@@ -231,32 +255,62 @@ class RouteCard extends StatelessWidget {
             Row(
               children: [
                 Column(
-                  children: const [
-                    Icon(Icons.circle, size: 8),
-                    SizedBox(height: 4),
-                    SizedBox(height: 24, child: VerticalDivider()),
-                    Icon(Icons.circle, size: 8, color: Colors.blue),
+                  children: [
+                    Icon(Icons.circle, size: 10, color: Colors.grey),
+                    SizedBox(
+                      height: 24,
+                      child: VerticalDivider(
+                        color: Theme.of(context).dividerColor,
+                      ),
+                    ),
+                    Icon(
+                      Icons.circle,
+                      size: 10,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text(start), Text(end)],
+                    children: [
+                      Text(
+                        start,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        end,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const Divider(height: 20),
+            Divider(height: 20, color: Theme.of(context).dividerColor),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 14),
+                Icon(Icons.access_time, size: 14, color: Color(0xFF64748B)),
                 const SizedBox(width: 4),
-                Text(duration),
+                Text(
+                  duration,
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
                 const SizedBox(width: 16),
-                const Icon(Icons.location_on, size: 14),
+                Icon(Icons.location_on, size: 14, color: Color(0xFF64748B)),
                 const SizedBox(width: 4),
-                Text(stops),
+                Text(
+                  stops,
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
               ],
             ),
           ],

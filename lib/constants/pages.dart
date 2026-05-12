@@ -1,3 +1,7 @@
+import 'package:get/get_navigation/src/routes/get_route.dart';
+
+import '../screens/ticket_detail_screen.dart';
+
 class AppRoutes {
   static String get profileRoute => '/profile';
   static String get forgotPasswordRoute => '/forgot-password';
@@ -14,10 +18,15 @@ class AppRoutes {
   static String get signupRoute => '/signup';
   static String get loginRoute => '/login';
   static String get mainLayoutRoute => '/home';
+  static String get ticketDetailRoute => '/ticket-detail';
 }
 
 class Pages {
   static final pages = [
+    GetPage(
+      name: AppRoutes.ticketDetailRoute,
+      page: () => TicketDetailScreen(),
+    ),
     // GetPage(
     //   name: AppRoutes.profileRoute,
     //   page: () => const ProfileScreen(),

@@ -5,7 +5,7 @@ import 'package:retry/retry.dart';
 
 import '../controllers/theme_mode_controller.dart';
 
-String kApiBaseUrl = 'https://trip-admin.onrender.com/api';
+String kApiBaseUrl = 'https://smart-bus-y0ky.onrender.com/api';
 String kStoreImageBaseUrl = '$kApiBaseUrl/public/store-images/';
 String kProductImagebaseUrl = '$kApiBaseUrl/public/product-images/';
 String kDeliveryPersonProfileImageBaseUrl =
@@ -13,9 +13,10 @@ String kDeliveryPersonProfileImageBaseUrl =
 
 final client = HttpClient();
 const retryOptions = RetryOptions(
-    maxDelay: Duration(milliseconds: 300),
-    delayFactor: Duration(seconds: 0),
-    maxAttempts: 3);
+  maxDelay: Duration(milliseconds: 300),
+  delayFactor: Duration(seconds: 0),
+  maxAttempts: 3,
+);
 const timeOut = Duration(seconds: 15);
 
 String imageBaseUrl = 'https://merkastuapi.endevour.org/public/store-images';
@@ -27,9 +28,9 @@ String personAvatar =
 String imageLoader = 'assets/images/loading.gif';
 String apartmentImage =
     'https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
-Color maincolor = const Color(0xFF6D28D9);
-Color secondarycolor = const Color(0xFF030712);
-Color maincolorLightTint = const Color(0xFFBDECD6);
+Color maincolor = const Color(0xFF0B66B2);
+Color secondarycolor = const Color(0xFF0B2A4A);
+Color maincolorLightTint = const Color(0xFFEAF4FF);
 List<BoxShadow> kCardShadow() {
   return [
     BoxShadow(

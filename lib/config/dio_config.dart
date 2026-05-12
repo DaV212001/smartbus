@@ -9,21 +9,25 @@ import '../constants/constants.dart';
 import '../constants/pages.dart';
 
 class AuthInterceptor extends Interceptor {
+  static Future<String?>? _refreshFuture;
+
   @override
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    if (!options.headers.containsKey('Authorization')) {
-      return super.onRequest(options, handler);
+    // Skip for auth endpoints to avoid infinite loops
+    if (options.path.contains('/auth/')) {
+      return handler.next(options);
     }
 
     if (ConfigPreference.isAccessTokenExpired()) {
+      Logger().d('Token expired proactive check. Refreshing...');
       final newToken = await _refreshAccessToken();
       if (newToken == null) {
         await ConfigPreference.clearTokens();
-        Logger().i('Here 6');
-        Get.toNamed(AppRoutes.loginRoute);
+        Get.offAllNamed(AppRoutes.loginRoute);
+        return;
       }
     }
 
@@ -32,53 +36,103 @@ class AuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer $token';
     }
 
-    super.onRequest(options, handler);
+    return handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+    if (err.response?.statusCode == 401 &&
+        !err.requestOptions.path.contains('/auth/')) {
+      Logger().d('401 Unauthorized detected. Attempting reactive refresh...');
       // Try to refresh token
       final newToken = await _refreshAccessToken();
       if (newToken != null) {
         // Retry original request with new token
         final req = err.requestOptions;
         req.headers['Authorization'] = 'Bearer $newToken';
-        final cloneResponse = await (await DioConfig.dio()).fetch(req);
-        return handler.resolve(cloneResponse);
+
+        // Use the same Dio instance (which is a singleton) to retry
+        final dio = await DioConfig.dio();
+        try {
+          final cloneResponse = await dio.fetch(req);
+          return handler.resolve(cloneResponse);
+        } catch (e) {
+          return handler.next(err);
+        }
       } else {
         await ConfigPreference.clearTokens();
-        Logger().i('Here 5');
-        Get.toNamed(AppRoutes.loginRoute);
+        Get.offAllNamed(AppRoutes.loginRoute);
+        return;
       }
     }
     return handler.next(err);
   }
 
   Future<String?> _refreshAccessToken() async {
-    final refreshToken = ConfigPreference.getRefreshToken();
-    if (refreshToken == null) return null;
+    // If a refresh is already in progress, join that future
+    if (_refreshFuture != null) {
+      Logger().d('Token refresh already in progress, joining future...');
+      return _refreshFuture;
+    }
+
+    _refreshFuture = _performTokenRefresh();
     try {
-      final dio = Dio(BaseOptions(baseUrl: kApiBaseUrl));
+      final result = await _refreshFuture;
+      return result;
+    } finally {
+      _refreshFuture = null;
+    }
+  }
+
+  Future<String?> _performTokenRefresh() async {
+    Logger().d('Starting token refresh request...');
+    final refreshToken = ConfigPreference.getRefreshToken();
+    if (refreshToken == null) {
+      Logger().e('No refresh token found in storage');
+      return null;
+    }
+
+    try {
+      // Create a dedicated Dio instance for refresh to avoid interceptor recursion
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: kApiBaseUrl,
+          connectTimeout: const Duration(seconds: 15),
+        ),
+      );
+
       final response = await dio.post(
-        '/auth/refresh',
+        '/v1/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
 
-      if (response.statusCode == 200) {
-        final newAccessToken = response.data['accessToken'];
-        final newRefreshToken =
-            response.data['refreshToken'] ?? refreshToken; // fallback
-        await ConfigPreference.setTokens(
-          response.data,
-          newAccessToken,
-          newRefreshToken,
-          response.data['expiresIn'],
-        );
-        return newAccessToken;
+      Logger().d('Refresh response: ${response.data}');
+
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        final data = response.data['data'];
+        if (data != null) {
+          final newAccessToken = data['accessToken'];
+          final newRefreshToken = data['refreshToken'] ?? refreshToken;
+          final expiresIn = data['expiresIn'] ?? 3600;
+
+          if (newAccessToken != null) {
+            await ConfigPreference.updateTokens(
+              newAccessToken,
+              newRefreshToken,
+              expiresIn,
+            );
+            Logger().i('Token refresh successful');
+            return newAccessToken;
+          }
+        }
       }
+      Logger().e(
+        'Token refresh failed: Invalid response or status ${response.statusCode}',
+      );
     } catch (e) {
-      Logger().e('Token refresh failed', error: e);
+      Logger().e('Token refresh failed with exception', error: e);
     }
     return null;
   }
@@ -99,8 +153,11 @@ class LoggingInterceptor extends Interceptor {
 
 class DioConfig {
   static PersistCookieJar? cookieJar;
+  static Dio? _dioInstance;
 
   static Future<Dio> dio() async {
+    if (_dioInstance != null) return _dioInstance!;
+
     if (cookieJar == null) {
       final dir = await getApplicationDocumentsDirectory();
       cookieJar = PersistCookieJar(
@@ -108,22 +165,21 @@ class DioConfig {
       );
     }
 
-    final dio = Dio(
+    _dioInstance = Dio(
       BaseOptions(
         baseUrl: kApiBaseUrl,
-        validateStatus: (status) => true,
         connectTimeout: const Duration(seconds: 60),
         receiveTimeout: const Duration(seconds: 120),
       ),
     );
 
-    dio.interceptors.addAll([
+    _dioInstance!.interceptors.addAll([
       // CookieManager(cookieJar!), // 👈 enables cookie/session persistence
       LoggingInterceptor(),
-      // AuthInterceptor(),
+      AuthInterceptor(),
     ]);
 
-    return dio;
+    return _dioInstance!;
   }
 
   static String convertDioError(DioException e) {
