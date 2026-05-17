@@ -5,6 +5,9 @@ import 'package:smartbus/utils/wrappers/shimmer_wrapper.dart';
 
 import '../controllers/wallet_controller.dart';
 import '../models/transaction.dart';
+import '../utils/api_call_status.dart';
+import '../utils/templates/loaded_widgets_template.dart';
+import '../widgets/animated_widgets/loading_animation_button.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -47,46 +50,134 @@ class WalletScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return RefreshIndicator(
-          onRefresh: () async {
-            controller.fetchWalletData();
-            controller.fetchTransactions();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+        Widget shimmerLoading() {
+          return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BalanceCard(
-                  controller: controller,
-                  balance: controller.balance.value,
-                  onAddFunds: () => _showAddFundsDialog(context, controller),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Recent Activity',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: theme.textTheme.titleLarge?.color,
+                ShimmerWrapper(
+                  isEnabled: true,
+                  child: Container(
+                    width: double.infinity,
+                    height: 180,
+                    margin: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.grey[300],
                     ),
                   ),
                 ),
-                Obx(
-                  () => TransactionList(
-                    transactions: controller.transactions.value,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: ShimmerWrapper(
+                    isEnabled: true,
+                    child: Container(
+                      width: 120,
+                      height: 20,
+                      color: Colors.grey[300],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 4,
+                  itemBuilder: (context, index) {
+                    return ShimmerWrapper(
+                      isEnabled: true,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 150,
+                                    height: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: 100,
+                                    height: 12,
+                                    color: Colors.grey[300],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 14,
+                              color: Colors.grey[300],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
+            ),
+          );
+        }
+
+        return LoadedWidget(
+          apiCallStatus: controller.transactionsStatus.value,
+          errorData: controller.transactionsError.value,
+          loadingChild: shimmerLoading(),
+          errorChild: null,
+          onReload: () async {
+            await controller.fetchWalletData();
+            await controller.fetchTransactions();
+          },
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await controller.fetchWalletData();
+              await controller.fetchTransactions();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BalanceCard(
+                    controller: controller,
+                    balance: controller.balance.value,
+                    onAddFunds: () => _showAddFundsDialog(context, controller),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    child: Text(
+                      'Recent Activity',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: theme.textTheme.titleLarge?.color,
+                      ),
+                    ),
+                  ),
+                  TransactionList(
+                    transactions: controller.transactions,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         );
@@ -137,7 +228,7 @@ class BalanceCard extends StatelessWidget {
           const SizedBox(height: 8),
           Obx(
             () => ShimmerWrapper(
-              isEnabled: controller.isBalanceLoading.value,
+              isEnabled: controller.balanceStatus.value == ApiCallStatus.loading,
               child: Text(
                 '${balance.toStringAsFixed(2)} ETB',
                 style: const TextStyle(
@@ -191,24 +282,40 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        Obx(()=>ElevatedButton(
-          onPressed: () {
-            final amount = double.tryParse(amountController.text);
-            if (amount != null && amount > 0) {
-              controller.addFunds(amount);
-              // Navigator.pop(context);
-            } else {
-              Get.snackbar('Error', 'Please enter a valid amount');
-            }
-          },
-          child: controller.isWalletLoading.value
-              ? SizedBox(
-            height: 10,
-            width: 10,
-            child: CircularProgressIndicator(color: Colors.white),
-          )
-              : const Text('Add'),
-        ),)
+        Obx(() {
+          final theme = Theme.of(context);
+          final isLoading = controller.topupStatus.value == ApiCallStatus.loading;
+          if (isLoading) {
+            return LoadingAnimatedButton(
+              width: 100,
+              height: 38,
+              color: theme.primaryColor,
+              borderColor: Colors.amber,
+              borderRadius: 8.0,
+              borderWidth: 3.0,
+              onTap: () {},
+              child: const Text(
+                'Adding...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            );
+          }
+          return ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(amountController.text);
+              if (amount != null && amount > 0) {
+                controller.addFunds(amount);
+              } else {
+                Get.snackbar('Error', 'Please enter a valid amount');
+              }
+            },
+            child: const Text('Add'),
+          );
+        })
 
       ],
     ),

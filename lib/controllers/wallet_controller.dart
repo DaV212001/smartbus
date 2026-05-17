@@ -7,6 +7,9 @@ import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../models/transaction.dart';
 import '../utils/templates/dio_template.dart';
+import '../utils/api_call_status.dart';
+import '../utils/error_data.dart';
+import '../utils/error_utils.dart';
 
 class WalletController extends GetxController {
   final isLoading = false.obs;
@@ -17,10 +20,22 @@ class WalletController extends GetxController {
   String? _activeIdempotencyKey;
   double? _lastAttemptedAmount;
 
+  // Split reactive state trackers
+  final balanceStatus = ApiCallStatus.holding.obs;
+  final balanceError = Rxn<ErrorData>();
+
+  final transactionsStatus = ApiCallStatus.holding.obs;
+  final transactionsError = Rxn<ErrorData>();
+
+  final topupStatus = ApiCallStatus.holding.obs;
+  final topupError = Rxn<ErrorData>();
+
   /// Call this when starting a new top-up session (e.g., opening a dialog)
   void prepareNewTopUp() {
     _activeIdempotencyKey = const Uuid().v4();
     _lastAttemptedAmount = null;
+    topupStatus.value = ApiCallStatus.holding;
+    topupError.value = null;
   }
 
   @override
@@ -32,6 +47,8 @@ class WalletController extends GetxController {
 
   Future<void> fetchWalletData() async {
     isBalanceLoading.value = true;
+    balanceStatus.value = ApiCallStatus.loading;
+    balanceError.value = null;
     await DioService.dioGet(
       path: '/v1/wallet/balance',
       options: dio_lib.Options(
@@ -49,13 +66,22 @@ class WalletController extends GetxController {
         //     .map((e) => WalletTransaction.fromJson(e))
         //     .toList();
         isBalanceLoading.value = false;
+        balanceStatus.value = ApiCallStatus.success;
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isBalanceLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        balanceError.value = err;
+        balanceStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 
   Future<void> fetchTransactions() async {
     isLoading.value = true;
+    transactionsStatus.value = ApiCallStatus.loading;
+    transactionsError.value = null;
     await DioService.dioGet(
       path: '/v1/wallet/transactions',
       options: dio_lib.Options(
@@ -70,8 +96,19 @@ class WalletController extends GetxController {
             .map((e) => WalletTransaction.fromJson(e))
             .toList();
         isLoading.value = false;
+        if (transactions.isEmpty) {
+          transactionsStatus.value = ApiCallStatus.empty;
+        } else {
+          transactionsStatus.value = ApiCallStatus.success;
+        }
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        transactionsError.value = err;
+        transactionsStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 
@@ -90,6 +127,8 @@ class WalletController extends GetxController {
     _lastAttemptedAmount ??= amount;
 
     isWalletLoading.value = true;
+    topupStatus.value = ApiCallStatus.loading;
+    topupError.value = null;
 
     await DioService.dioPost(
       path: '/v1/wallet/topup',
@@ -109,11 +148,18 @@ class WalletController extends GetxController {
         _activeIdempotencyKey = null; // Clear on success
         _lastAttemptedAmount = null;
         isWalletLoading.value = false;
+        topupStatus.value = ApiCallStatus.success;
         fetchWalletData();
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
       },
-      onFailure: (error, response) {
+      onFailure: (error, response) async {
         Logger().d(response);
         isWalletLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        topupError.value = err;
+        topupStatus.value = ApiCallStatus.error;
         // Note: We do NOT clear the idempotency key on failure.
         // This allows the next call (retry) to use the same key.
         _handleError(error, response);

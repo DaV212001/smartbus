@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/route_controller.dart';
+import '../utils/templates/loaded_widgets_template.dart';
+import '../utils/wrappers/shimmer_wrapper.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -164,41 +166,175 @@ class HomeScreen extends StatelessWidget {
   Widget _buildRouteList(BuildContext context) {
     final routeController = Get.find<RouteController>();
     return Obx(() {
-      if (routeController.isLoading.value && routeController.routes.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (routeController.routes.isEmpty) {
-        return const Center(child: Text("No routes available"));
-      }
-
-      return RefreshIndicator(
-        onRefresh: () => routeController.fetchRoutes(page: 1),
-        child: ListView.builder(
-          controller: routeController.scrollController,
+      Widget shimmerLoading() {
+        return ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: routeController.routes.length +
-              (routeController.isLoadingMore.value ? 1 : 0),
+          itemCount: 4,
           itemBuilder: (context, index) {
-            if (index == routeController.routes.length) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-
-            final route = routeController.routes[index];
-            return RouteCard(
-              routeId: route.id?.toString() ?? '',
-              routeName: route.routeNumber ?? 'Route',
-              price: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
-              start: route.startStopName ?? 'Start',
-              end: route.endStopName ?? 'End',
-              duration: "${route.duration ?? '0'} mins",
-              stops: "${route.totalStops ?? '0'} stops",
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                  color: Theme.of(context).cardColor,
+                ),
+                child: ShimmerWrapper(
+                  isEnabled: true,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 24,
+                                  child: VerticalDivider(color: Colors.grey),
+                                ),
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: Container(
+                                      width: 150,
+                                      height: 14,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  // const SizedBox(height: 12),
+                                  Container(
+                                    width: 120,
+                                    height: 14,
+                                    color: Colors.grey[300],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 80,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             );
           },
-        ),
+        );
+      }
+
+      return LoadedWidget(
+        apiCallStatus: routeController.routesStatus.value,
+        errorData: routeController.routesError.value,
+        loadingChild: shimmerLoading(),
+        onReload: () => routeController.fetchRoutes(page: 1),
+        errorChild: null,
+        child:
+            // shimmerLoading(),
+            routeController.routes.isEmpty
+            ? const Center(child: Text("No routes available"))
+            : RefreshIndicator(
+                onRefresh: () => routeController.fetchRoutes(page: 1),
+                child: ListView.builder(
+                  controller: routeController.scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount:
+                      routeController.routes.length +
+                      (routeController.isLoadingMore.value ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == routeController.routes.length) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final route = routeController.routes[index];
+                    return RouteCard(
+                      routeId: route.id?.toString() ?? '',
+                      routeName: route.routeNumber ?? 'Route',
+                      price: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
+                      start: route.startStopName ?? 'Start',
+                      end: route.endStopName ?? 'End',
+                      duration: "${route.duration ?? '0'} mins",
+                      stops: "${route.totalStops ?? '0'} stops",
+                    );
+                  },
+                ),
+              ),
       );
     });
   }

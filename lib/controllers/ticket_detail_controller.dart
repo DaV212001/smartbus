@@ -4,20 +4,36 @@ import 'package:get/get.dart';
 import '../config/dio_config.dart';
 import '../models/ticket.dart';
 import '../utils/templates/dio_template.dart';
+import '../utils/api_call_status.dart';
+import '../utils/error_data.dart';
+import '../utils/error_utils.dart';
 
 class TicketDetailController extends GetxController {
   final isLoading = false.obs;
   final ticket = Rxn<Ticket>();
 
+  // Reactive state trackers
+  final detailStatus = ApiCallStatus.holding.obs;
+  final detailError = Rxn<ErrorData>();
+
   Future<void> fetchTicketDetail(String id) async {
     isLoading.value = true;
+    detailStatus.value = ApiCallStatus.loading;
+    detailError.value = null;
     await DioService.dioGet(
       path: '/v1/tickets/$id',
       onSuccess: (response) {
         ticket.value = Ticket.fromJson(response.data['data']);
         isLoading.value = false;
+        detailStatus.value = ApiCallStatus.success;
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        detailError.value = err;
+        detailStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 

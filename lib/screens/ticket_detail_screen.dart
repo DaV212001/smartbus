@@ -5,8 +5,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../controllers/ticket_detail_controller.dart';
-
 import '../models/ticket.dart';
+import '../utils/templates/loaded_widgets_template.dart';
+import '../utils/wrappers/shimmer_wrapper.dart';
 
 class TicketDetailScreen extends StatelessWidget {
   TicketDetailScreen({super.key});
@@ -55,40 +56,88 @@ class TicketDetailScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final ticket = controller.ticket.value;
-        if (ticket == null) {
-          return const Center(child: Text('Ticket not found'));
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => controller.fetchTicketDetail(ticketId!),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+        Widget shimmerLoading() {
+          return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // 1. Main Ticket Card
-                _buildTicketCard(context, ticket),
+                ShimmerWrapper(
+                  isEnabled: true,
+                  child: Container(
+                    width: double.infinity,
+                    height: 320,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
-
-                // 2. Journey Information
-                _buildJourneyInfo(context, ticket),
+                ShimmerWrapper(
+                  isEnabled: true,
+                  child: Container(
+                    width: double.infinity,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
-
-                // 3. Transaction Details
-                _buildDetailsSection(context, ticket),
-                const SizedBox(height: 32),
-
-                // 4. Action Buttons
-                _buildActions(context),
-                const SizedBox(height: 40),
+                ShimmerWrapper(
+                  isEnabled: true,
+                  child: Container(
+                    width: double.infinity,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
+          );
+        }
+
+        final ticket = controller.ticket.value;
+
+        return LoadedWidget(
+          apiCallStatus: controller.detailStatus.value,
+          errorData: controller.detailError.value,
+          loadingChild: shimmerLoading(),
+          errorChild: null,
+          onReload: () => ticketId != null ? controller.fetchTicketDetail(ticketId) : null,
+          child: ticket == null
+              ? const Center(child: Text('Ticket not found'))
+              : RefreshIndicator(
+                  onRefresh: () => controller.fetchTicketDetail(ticketId!),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        // 1. Main Ticket Card
+                        _buildTicketCard(context, ticket),
+                        const SizedBox(height: 24),
+
+                        // 2. Journey Information
+                        _buildJourneyInfo(context, ticket),
+                        const SizedBox(height: 24),
+
+                        // 3. Transaction Details
+                        _buildDetailsSection(context, ticket),
+                        const SizedBox(height: 32),
+
+                        // 4. Action Buttons
+                        _buildActions(context),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ),
         );
       }),
     );

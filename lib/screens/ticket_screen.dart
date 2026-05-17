@@ -6,6 +6,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../controllers/ticket_controller.dart';
 import '../models/ticket.dart';
+import '../utils/templates/loaded_widgets_template.dart';
+import '../utils/wrappers/shimmer_wrapper.dart';
 import 'ticket_detail_screen.dart';
 
 class TicketScreen extends StatelessWidget {
@@ -36,23 +38,81 @@ class TicketScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.ticketHistory.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return RefreshIndicator(
-          onRefresh: controller.fetchTickets,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+        Widget shimmerLoading() {
+          return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (controller.activeTicket.value != null)
-                  ActiveTicketSection(ticket: controller.activeTicket.value!)
-                else
-                  const NoActiveTicketSection(),
-                HistorySection(history: controller.ticketHistory),
+                ShimmerWrapper(
+                  isEnabled: true,
+                  child: Container(
+                    width: double.infinity,
+                    height: 320,
+                    margin: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: ShimmerWrapper(
+                    isEnabled: true,
+                    child: Container(
+                      width: 120,
+                      height: 20,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 3,
+                  itemBuilder: (context, index) {
+                    return ShimmerWrapper(
+                      isEnabled: true,
+                      child: Container(
+                        height: 70,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
+            ),
+          );
+        }
+
+        return LoadedWidget(
+          apiCallStatus: controller.ticketsStatus.value,
+          errorData: controller.ticketsError.value,
+          loadingChild: shimmerLoading(),
+          errorChild: null,
+          onReload: controller.fetchTickets,
+          child: RefreshIndicator(
+            onRefresh: controller.fetchTickets,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (controller.activeTicket.value != null)
+                    ActiveTicketSection(ticket: controller.activeTicket.value!)
+                  else
+                    const NoActiveTicketSection(),
+                  HistorySection(history: controller.ticketHistory),
+                ],
+              ),
             ),
           ),
         );

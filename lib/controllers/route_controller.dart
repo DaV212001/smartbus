@@ -8,6 +8,9 @@ import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../models/route.dart';
 import '../utils/templates/dio_template.dart';
+import '../utils/api_call_status.dart';
+import '../utils/error_data.dart';
+import '../utils/error_utils.dart';
 
 class RouteController extends GetxController {
   final isLoading = false.obs;
@@ -25,6 +28,16 @@ class RouteController extends GetxController {
   int totalPages = 1;
 
   static const String _cachedRoutesKey = 'cached_routes_list';
+
+  // Split reactive state trackers
+  final routesStatus = ApiCallStatus.holding.obs;
+  final routesError = Rxn<ErrorData>();
+
+  final searchStatus = ApiCallStatus.holding.obs;
+  final searchError = Rxn<ErrorData>();
+
+  final detailsStatus = ApiCallStatus.holding.obs;
+  final detailsError = Rxn<ErrorData>();
 
   @override
   void onInit() {
@@ -92,6 +105,8 @@ class RouteController extends GetxController {
 
     if (page == 1) {
       isLoading.value = true;
+      routesStatus.value = ApiCallStatus.loading;
+      routesError.value = null;
       hasMore.value = true;
       currentPage = 1;
 
@@ -146,10 +161,18 @@ class RouteController extends GetxController {
 
         isLoading.value = false;
         isLoadingMore.value = false;
+        if (routes.isEmpty) {
+          routesStatus.value = ApiCallStatus.empty;
+        } else {
+          routesStatus.value = ApiCallStatus.success;
+        }
       },
-      onFailure: (error, response) {
+      onFailure: (error, response) async {
         isLoading.value = false;
         isLoadingMore.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        routesError.value = err;
+        routesStatus.value = ApiCallStatus.error;
         // Only show full screen error if we don't have any cached routes
         if (routes.isEmpty) {
           _handleError(error, response);
@@ -161,9 +184,12 @@ class RouteController extends GetxController {
   Future<void> searchRoutes(String query) async {
     if (query.isEmpty) {
       searchResults.clear();
+      searchStatus.value = ApiCallStatus.holding;
       return;
     }
     isLoading.value = true;
+    searchStatus.value = ApiCallStatus.loading;
+    searchError.value = null;
     await DioService.dioGet(
       path: '/v1/routes/search',
       queryParameters: {'q': query},
@@ -171,21 +197,41 @@ class RouteController extends GetxController {
         final List items = response.data['data'] ?? [];
         searchResults.value = items.map((e) => Route.fromJson(e)).toList();
         isLoading.value = false;
+        if (searchResults.isEmpty) {
+          searchStatus.value = ApiCallStatus.empty;
+        } else {
+          searchStatus.value = ApiCallStatus.success;
+        }
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        searchError.value = err;
+        searchStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 
   Future<void> fetchRouteById(String id) async {
     selectedRouteDetails.value = null;
     isLoading.value = true;
+    detailsStatus.value = ApiCallStatus.loading;
+    detailsError.value = null;
     await DioService.dioGet(
       path: '/v1/routes/$id',
       onSuccess: (response) {
         selectedRouteDetails.value = Route.fromJson(response.data['data']);
         isLoading.value = false;
+        detailsStatus.value = ApiCallStatus.success;
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        detailsError.value = err;
+        detailsStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 

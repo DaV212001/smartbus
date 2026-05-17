@@ -5,11 +5,21 @@ import 'package:uuid/uuid.dart';
 import '../config/dio_config.dart';
 import '../models/ticket.dart';
 import '../utils/templates/dio_template.dart';
+import '../utils/api_call_status.dart';
+import '../utils/error_data.dart';
+import '../utils/error_utils.dart';
 
 class TicketController extends GetxController {
   final isLoading = false.obs;
   final activeTicket = Rxn<Ticket>(null);
   final ticketHistory = <Ticket>[].obs;
+
+  // Split reactive state trackers
+  final ticketsStatus = ApiCallStatus.holding.obs;
+  final ticketsError = Rxn<ErrorData>();
+
+  final purchaseStatus = ApiCallStatus.holding.obs;
+  final purchaseError = Rxn<ErrorData>();
 
   @override
   void onInit() {
@@ -19,6 +29,8 @@ class TicketController extends GetxController {
 
   Future<void> fetchTickets() async {
     isLoading.value = true;
+    ticketsStatus.value = ApiCallStatus.loading;
+    ticketsError.value = null;
     await DioService.dioGet(
       path: '/v1/tickets',
       onSuccess: (response) {
@@ -27,12 +39,24 @@ class TicketController extends GetxController {
 
         // Filter for active ticket based on status
         activeTicket.value = ticketHistory
-            .where((t) => t.status.toUpperCase() == 'ACTIVE')
-            .firstOrNull;
+             .where((t) => t.status.toUpperCase() == 'ACTIVE')
+             .firstOrNull;
+
+        isLoading.value = false;
+        if (ticketHistory.isEmpty) {
+          ticketsStatus.value = ApiCallStatus.empty;
+        } else {
+          ticketsStatus.value = ApiCallStatus.success;
+        }
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        isLoading.value = false;
+        final err = await ErrorUtil.getErrorData(error.toString());
+        ticketsError.value = err;
+        ticketsStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
-    isLoading.value = false;
   }
 
   Future<void> purchaseTicket({
@@ -41,6 +65,8 @@ class TicketController extends GetxController {
     required String dropoffStopId,
   }) async {
     isLoading.value = true;
+    purchaseStatus.value = ApiCallStatus.loading;
+    purchaseError.value = null;
     final idempotencyKey = const Uuid().v4();
 
     await DioService.dioPost(
@@ -58,9 +84,15 @@ class TicketController extends GetxController {
       },
       onSuccess: (response) {
         Get.snackbar('Success', 'Ticket purchased successfully');
+        purchaseStatus.value = ApiCallStatus.success;
         fetchTickets();
       },
-      onFailure: (error, response) => _handleError(error, response),
+      onFailure: (error, response) async {
+        final err = await ErrorUtil.getErrorData(error.toString());
+        purchaseError.value = err;
+        purchaseStatus.value = ApiCallStatus.error;
+        _handleError(error, response);
+      },
     );
   }
 
