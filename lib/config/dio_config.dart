@@ -146,6 +146,7 @@ class LoggingInterceptor extends Interceptor {
       'method': options.method,
       'headers': options.headers,
       'body': options.data,
+      'queryParameters': options.queryParameters,
     });
     super.onRequest(options, handler);
   }

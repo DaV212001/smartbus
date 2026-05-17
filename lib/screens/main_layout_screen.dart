@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:smartbus/screens/alerts_screen.dart';
 import 'package:smartbus/screens/home_screen.dart';
+import 'package:smartbus/screens/settings/settings_screen.dart';
 import 'package:smartbus/screens/ticket_screen.dart';
 import 'package:smartbus/screens/wallet_screen.dart';
 
@@ -23,7 +23,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
       const HomeScreen(),
       const TicketScreen(),
       const WalletScreen(),
-      const AlertsScreen(),
+      SettingsScreen(),
     ];
   }
 
@@ -48,8 +48,8 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         inactiveColorPrimary: const Color(0xFF64748B),
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(LucideIcons.bell),
-        title: ("Alerts"),
+        icon: const Icon(LucideIcons.settings),
+        title: ("Profile"),
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),
       ),

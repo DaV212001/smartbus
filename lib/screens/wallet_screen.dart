@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:smartbus/utils/wrappers/shimmer_wrapper.dart';
 
 import '../controllers/wallet_controller.dart';
 import '../models/transaction.dart';
@@ -46,7 +47,7 @@ class WalletScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.transactions.isEmpty) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
         return RefreshIndicator(
@@ -60,9 +61,11 @@ class WalletScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BalanceCard(
+                  controller: controller,
                   balance: controller.balance.value,
                   onAddFunds: () => _showAddFundsDialog(context, controller),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -77,7 +80,11 @@ class WalletScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                TransactionList(transactions: controller.transactions),
+                Obx(
+                  () => TransactionList(
+                    transactions: controller.transactions.value,
+                  ),
+                ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -90,9 +97,11 @@ class WalletScreen extends StatelessWidget {
 
 class BalanceCard extends StatelessWidget {
   final double balance;
+  final WalletController controller;
   final VoidCallback onAddFunds;
   const BalanceCard({
     super.key,
+    required this.controller,
     required this.balance,
     required this.onAddFunds,
   });
@@ -126,15 +135,21 @@ class BalanceCard extends StatelessWidget {
             style: TextStyle(color: Colors.white, fontSize: 13),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${balance.toStringAsFixed(2)} ETB',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
+          Obx(
+            () => ShimmerWrapper(
+              isEnabled: controller.isBalanceLoading.value,
+              child: Text(
+                '${balance.toStringAsFixed(2)} ETB',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
             ),
           ),
+
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: onAddFunds,
@@ -158,6 +173,7 @@ class BalanceCard extends StatelessWidget {
 
 void _showAddFundsDialog(BuildContext context, WalletController controller) {
   final amountController = TextEditingController();
+  controller.prepareNewTopUp();
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -175,18 +191,25 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        Obx(()=>ElevatedButton(
           onPressed: () {
             final amount = double.tryParse(amountController.text);
             if (amount != null && amount > 0) {
               controller.addFunds(amount);
-              Navigator.pop(context);
+              // Navigator.pop(context);
             } else {
               Get.snackbar('Error', 'Please enter a valid amount');
             }
           },
-          child: const Text('Add'),
-        ),
+          child: controller.isWalletLoading.value
+              ? SizedBox(
+            height: 10,
+            width: 10,
+            child: CircularProgressIndicator(color: Colors.white),
+          )
+              : const Text('Add'),
+        ),)
+
       ],
     ),
   );

@@ -16,16 +16,17 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    String name = json['name'];
+    String name = json['fullName'];
     List<String> names = name.split(' ');
     String firstName = names[0];
     String lastName = names[1];
     return User(
-        id: json['id'],
-        firstName: firstName,
-        email: json['email'],
-        lastName: lastName,
-        imageUrl: json['image'],
-        role: json['role']);
+      id: json['id'],
+      firstName: firstName,
+      email: json['email'],
+      lastName: lastName,
+      imageUrl: json['image'],
+      role: json['role'],
+    );
   }
 }

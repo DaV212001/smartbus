@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/route_controller.dart';
-import '../widgets/cards/route_card_standard.dart';
+import 'home_screen.dart';
 
 class RouteSearchScreen extends StatelessWidget {
   const RouteSearchScreen({super.key});
@@ -188,15 +188,14 @@ class RouteSearchScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: list.map((route) {
-            return RouteCardStandard(
+            return RouteCard(
               routeId: route.id?.toString() ?? '',
               routeName: route.routeNumber ?? 'Route',
-              fare: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
-              startStop: route.startStopName ?? 'Start',
-              endStop: route.endStopName ?? 'End',
-              duration: "${route.duration ?? '0'}m",
-              stopsCount: "${route.totalStops ?? '0'} stops",
-              frequency: "Every 15 min",
+              price: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
+              start: route.startStopName ?? 'Start',
+              end: route.endStopName ?? 'End',
+              duration: "${route.duration ?? '0'} mins",
+              stops: "${route.totalStops ?? '0'} stops",
             );
           }).toList(),
         ),

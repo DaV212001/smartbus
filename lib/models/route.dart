@@ -69,7 +69,7 @@ class Route {
               ? json['price'].toDouble()
               : double.tryParse(json['price'].toString())) ??
           0.0;
-      convertedPrice = (convertedPrice! / 100)!;
+      // convertedPrice = (convertedPrice! / 100)!;
     }
 
     return Route(

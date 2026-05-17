@@ -79,7 +79,13 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildFilters(BuildContext context) {
-    final filters = ["All Routes", "Price", "Recent", "Saved"];
+    final routeController = Get.find<RouteController>();
+    final filters = [
+      {"label": "Recent", "sortBy": "createdAt", "sortOrder": "desc"},
+      {"label": "Price (Low)", "sortBy": "price", "sortOrder": "asc"},
+      {"label": "Price (High)", "sortBy": "price", "sortOrder": "desc"},
+      {"label": "Duration", "sortBy": "duration", "sortOrder": "asc"},
+    ];
 
     return SizedBox(
       height: 40,
@@ -88,33 +94,51 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: filters.length,
         itemBuilder: (context, index) {
-          final isActive = index == 0;
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(18),
-              border: isActive
-                  ? null
-                  : Border.all(
-                      color: Theme.of(
-                        context,
-                      ).dividerColor.withValues(alpha: 0.15),
-                    ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              filters[index],
-              style: TextStyle(
-                color: isActive
-                    ? Colors.white
-                    : Theme.of(context).textTheme.bodyLarge?.color,
+          final filter = filters[index];
+
+          return Obx(() {
+            final isActive =
+                routeController.currentSortBy.value == filter['sortBy'] &&
+                routeController.currentSortOrder.value == filter['sortOrder'];
+            return GestureDetector(
+              onTap: () {
+                // routeController.currentSortBy.value = filter['sortBy']!;
+                // routeController.currentSortOrder.value = filter['sortOrder']!;
+                routeController.fetchRoutes(
+                  sortBy: filter['sortBy'],
+                  sortOrder: filter['sortOrder'],
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: isActive
+                      ? null
+                      : Border.all(
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withValues(alpha: 0.15),
+                        ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  filter['label']!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                    color: isActive
+                        ? Colors.white
+                        : Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
               ),
-            ),
-          );
+            );
+          });
         },
       ),
     );
@@ -149,15 +173,24 @@ class HomeScreen extends StatelessWidget {
       }
 
       return RefreshIndicator(
-        onRefresh: routeController.fetchRoutes,
+        onRefresh: () => routeController.fetchRoutes(page: 1),
         child: ListView.builder(
+          controller: routeController.scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: routeController.routes.length,
+          itemCount: routeController.routes.length +
+              (routeController.isLoadingMore.value ? 1 : 0),
           itemBuilder: (context, index) {
+            if (index == routeController.routes.length) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
             final route = routeController.routes[index];
             return RouteCard(
               routeId: route.id?.toString() ?? '',
-              route: route.routeNumber ?? 'Route',
+              routeName: route.routeNumber ?? 'Route',
               price: "${route.price?.toStringAsFixed(2) ?? '0.00'} ETB",
               start: route.startStopName ?? 'Start',
               end: route.endStopName ?? 'End',
@@ -189,12 +222,12 @@ class HomeScreen extends StatelessWidget {
 }
 
 class RouteCard extends StatelessWidget {
-  final String routeId, route, price, start, end, duration, stops;
+  final String routeId, routeName, price, start, end, duration, stops;
 
   const RouteCard({
     super.key,
     required this.routeId,
-    required this.route,
+    required this.routeName,
     required this.price,
     required this.start,
     required this.end,
@@ -209,7 +242,7 @@ class RouteCard extends StatelessWidget {
         '/route-detail',
         arguments: {
           'routeId': routeId,
-          'route': route,
+          'route': routeName,
           'price': price,
           'start': start,
           'end': end,
@@ -238,7 +271,7 @@ class RouteCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    route,
+                    routeName,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),

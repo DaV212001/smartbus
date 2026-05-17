@@ -9,11 +9,11 @@ import '../../models/route.dart' as r;
 import '../../models/stop_tcs.dart';
 import '../../utils/wrappers/shimmer_wrapper.dart';
 
-class RouteCard extends StatelessWidget {
+class RoutCard extends StatelessWidget {
   final r.Route route;
   final bool? isShimmer;
 
-  const RouteCard({super.key, required this.route, this.isShimmer});
+  const RoutCard({super.key, required this.route, this.isShimmer});
 
   @override
   Widget build(BuildContext context) {
