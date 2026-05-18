@@ -14,7 +14,7 @@ class OtpScreen extends GetView<AuthController> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
-          'Verification',
+          'verification'.tr,
           style: TextStyle(
             color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
@@ -44,7 +44,7 @@ class OtpScreen extends GetView<AuthController> {
                 children: [
                   const SizedBox(height: 32),
                   Text(
-                    'Verify Code',
+                    'verify_code'.tr,
                     style: TextStyle(
                       color:
                           Theme.of(context).textTheme.headlineMedium?.color ??
@@ -54,10 +54,10 @@ class OtpScreen extends GetView<AuthController> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Please enter the 6-digit code sent to your device.',
+                  Text(
+                    'otp_prompt'.tr,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
                   ),
                   const SizedBox(height: 48),
 
@@ -98,9 +98,9 @@ class OtpScreen extends GetView<AuthController> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'Verify',
-                                style: TextStyle(
+                            : Text(
+                                'verify'.tr,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                 ),
@@ -109,9 +109,9 @@ class OtpScreen extends GetView<AuthController> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Don\'t receive code?',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                  Text(
+                    'dont_receive_code'.tr,
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
                   ),
                   Obx(
                     () => TextButton(
@@ -120,8 +120,8 @@ class OtpScreen extends GetView<AuthController> {
                           : controller.resendOtp,
                       child: Text(
                         controller.isLoading.value
-                            ? 'Resending...'
-                            : 'Resend Code',
+                            ? 'resending'.tr
+                            : 'resend_code'.tr,
                         style: TextStyle(
                           color: controller.isLoading.value
                               ? Colors.grey

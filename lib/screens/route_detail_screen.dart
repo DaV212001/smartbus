@@ -61,8 +61,8 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> args = Get.arguments ?? {};
-    final String routeName = args['route'] ?? 'Route Details';
-    final String destination = args['end'] ?? 'Destination';
+    final String routeName = args['route'] ?? 'route_details'.tr;
+    final String destination = args['end'] ?? 'destination'.tr;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -104,7 +104,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
 
         final route = routeController.selectedRouteDetails.value;
         if (route == null) {
-          return const Center(child: Text("Route details not found"));
+          return Center(child: Text("route_details_not_found".tr));
         }
 
         return Stack(
@@ -255,9 +255,9 @@ class ActiveTripCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Current Trip",
-                style: TextStyle(
+              Text(
+                "current_trip".tr,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
@@ -268,9 +268,9 @@ class ActiveTripCard extends StatelessWidget {
                   color: Colors.white24,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
-                  "LIVE",
-                  style: TextStyle(
+                child: Text(
+                  "live".tr,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -293,16 +293,16 @@ class ActiveTripCard extends StatelessWidget {
                 color: Colors.white12,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.qr_code, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
+                      const Icon(Icons.qr_code, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
                       Text(
-                        "View Active Ticket",
-                        style: TextStyle(color: Colors.white),
+                        "view_active_ticket".tr,
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
@@ -315,9 +315,9 @@ class ActiveTripCard extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
-            label: const Text(
-              "Request Weraj (Drop-off)",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            label: Text(
+              "request_weraj".tr,
+              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -354,9 +354,9 @@ class RouteStatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStat(context, "DISTANCE", distance),
-          _buildStat(context, "STOPS", stopsCount),
-          _buildStat(context, "EST. TIME", estTime),
+          _buildStat(context, "distance_label".tr, distance),
+          _buildStat(context, "stops_label".tr, stopsCount),
+          _buildStat(context, "est_time_label".tr, estTime),
         ],
       ),
     );
@@ -407,9 +407,9 @@ class StopSelectors extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          _buildRow(context, "From", selectedFrom, onFromTap),
+          _buildRow(context, "from_label".tr, selectedFrom, onFromTap),
           const SizedBox(height: 12),
-          _buildRow(context, "To", selectedTo, onToTap),
+          _buildRow(context, "to_label".tr, selectedTo, onToTap),
         ],
       ),
     );
@@ -479,9 +479,9 @@ class RouteTimeline extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "ROUTE SCHEDULE",
-            style: TextStyle(
+          Text(
+            "route_schedule".tr,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Color(0xFF64748B),
@@ -489,7 +489,7 @@ class RouteTimeline extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           if (stops.isEmpty)
-            const Text("No stops available")
+            Text("no_stops_available".tr)
           else
             ListView.builder(
               shrinkWrap: true,
@@ -508,11 +508,11 @@ class RouteTimeline extends StatelessWidget {
 
                 return _buildTimelineItem(
                   context,
-                  stopName ?? 'Stop ${index + 1}',
+                  stopName ?? 'stop'.tr + ' ${index + 1}',
                   isLast
                       ? ''
-                      : '${(distanceToNext / 1000).toStringAsFixed(1)}km to next stop',
-                  isLast ? '' : '$durationToNext Min',
+                      : 'to_next_stop'.trParams({'distance': '${(distanceToNext / 1000).toStringAsFixed(1)}km'}),
+                  isLast ? '' : '$durationToNext ' + 'min_unit'.tr,
                   true,
                   !isLast,
                   isSelected: index == stops.length - 1, // Example logic
@@ -635,9 +635,9 @@ class ActionBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Total Fare",
-                style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+              Text(
+                "total_fare".tr,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
               ),
               Text(
                 "$fare ETB",
@@ -674,8 +674,8 @@ class ActionBar extends StatelessWidget {
                     ),
               label: Text(
                 ticketController.isLoading.value
-                    ? "Processing..."
-                    : "Purchase Ticket",
+                    ? "processing".tr
+                    : "purchase_ticket".tr,
                 style: const TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(

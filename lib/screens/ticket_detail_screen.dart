@@ -32,7 +32,7 @@ class TicketDetailScreen extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Ticket Details',
+          'ticket_details'.tr,
           style: TextStyle(
             color: theme.textTheme.titleLarge?.color,
             fontWeight: FontWeight.bold,
@@ -111,7 +111,7 @@ class TicketDetailScreen extends StatelessWidget {
           errorChild: null,
           onReload: () => ticketId != null ? controller.fetchTicketDetail(ticketId) : null,
           child: ticket == null
-              ? const Center(child: Text('Ticket not found'))
+              ? Center(child: Text('ticket_not_found'.tr))
               : RefreshIndicator(
                   onRefresh: () => controller.fetchTicketDetail(ticketId!),
                   child: SingleChildScrollView(
@@ -247,11 +247,11 @@ class TicketDetailScreen extends StatelessWidget {
                   ),
                 ),
                 if (isExpired)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
                     child: Text(
-                      'TICKET EXPIRED',
-                      style: TextStyle(
+                      'ticket_expired'.tr,
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -260,7 +260,7 @@ class TicketDetailScreen extends StatelessWidget {
                   ),
                 const SizedBox(height: 20),
                 Text(
-                  'Ticket ID: ${ticket.id.substring(0, 8).toUpperCase()}',
+                  'ticket_id_label'.trParams({'id': ticket.id.substring(0, 8).toUpperCase()}),
                   style: TextStyle(
                     color: theme.textTheme.bodySmall?.color,
                     fontSize: 12,
@@ -280,9 +280,9 @@ class TicketDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'JOURNEY DETAILS',
-          style: TextStyle(
+        Text(
+          'journey_details'.tr,
+          style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color: Color(0xFF64748B),
@@ -328,14 +328,14 @@ class TicketDetailScreen extends StatelessWidget {
                   children: [
                     _buildStopInfo(
                       context,
-                      'Boarding From',
-                      ticket.boardingStop?.name ?? 'Starting Stop',
+                      'boarding_from'.tr,
+                      ticket.boardingStop?.name ?? 'starting_stop'.tr,
                     ),
                     const SizedBox(height: 24),
                     _buildStopInfo(
                       context,
-                      'Dropping At',
-                      ticket.dropoffStop?.name ?? 'Destination Stop',
+                      'dropping_at'.tr,
+                      ticket.dropoffStop?.name ?? 'destination_stop'.tr,
                     ),
                   ],
                 ),
@@ -379,9 +379,9 @@ class TicketDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'TRANSACTION DETAILS',
-          style: TextStyle(
+        Text(
+          'transaction_details'.tr,
+          style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,
             color: Color(0xFF64748B),
@@ -400,19 +400,19 @@ class TicketDetailScreen extends StatelessWidget {
             children: [
               _buildDetailRow(
                 context,
-                'Fare Amount',
+                'fare_amount'.tr,
                 '${ticket.fareAmount.toStringAsFixed(2)} ETB',
               ),
               const Divider(height: 24),
               _buildDetailRow(
                 context,
-                'Purchased On',
+                'purchased_on'.tr,
                 _formatDate(ticket.purchasedAt),
               ),
               const Divider(height: 24),
               _buildDetailRow(
                 context,
-                'Expires At',
+                'expires_at_label'.tr,
                 _formatDate(ticket.expiresAt),
               ),
             ],
@@ -452,9 +452,9 @@ class TicketDetailScreen extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
-            label: const Text(
-              "Request Weraj (Drop-off)",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            label: Text(
+              'request_weraj'.tr,
+              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,

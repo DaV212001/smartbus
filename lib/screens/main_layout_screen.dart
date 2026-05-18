@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:smartbus/screens/home_screen.dart';
@@ -31,25 +32,25 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
     return [
       PersistentBottomNavBarItem(
         icon: const Icon(LucideIcons.map),
-        title: ("Routes"),
+        title: 'bottom_nav_routes'.tr,
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(LucideIcons.qrCode),
-        title: ("My Ticket"),
+        title: 'bottom_nav_ticket'.tr,
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(LucideIcons.wallet),
-        title: ("Wallet"),
+        title: 'bottom_nav_wallet'.tr,
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(LucideIcons.settings),
-        title: ("Profile"),
+        title: 'bottom_nav_profile'.tr,
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),
       ),

@@ -126,8 +126,8 @@ class SettingsScreen extends StatelessWidget {
                                       color: Colors.white,
                                     ),
                               textBuilder: (value) => value
-                                  ? const Center(child: Text('Light'))
-                                  : const Center(child: Text('Dark')),
+                                  ? Center(child: Text('light'.tr))
+                                  : Center(child: Text('dark'.tr)),
                             ),
                           ),
                         ],

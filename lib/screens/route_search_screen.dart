@@ -25,7 +25,7 @@ class RouteSearchScreen extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          "Find Route",
+          "find_route".tr,
           style: TextStyle(
             color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.bold,
@@ -72,7 +72,7 @@ class RouteSearchScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Where to?",
+            "where_to".tr,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -96,13 +96,13 @@ class RouteSearchScreen extends StatelessWidget {
                 children: [
                   _SearchField(
                     icon: Icons.circle,
-                    hint: "Departure Stop",
+                    hint: "departure_stop".tr,
                     context: context,
                   ),
                   const SizedBox(height: 12),
                   _SearchField(
                     icon: Icons.location_on,
-                    hint: "Destination Stop",
+                    hint: "destination_stop".tr,
                     context: context,
                   ),
                 ],
@@ -117,7 +117,7 @@ class RouteSearchScreen extends StatelessWidget {
   }
 
   Widget _filters(BuildContext context) {
-    final filters = ["Lowest Price", "Fastest", "Route #"];
+    final filters = ["filter_lowest_price".tr, "filter_fastest".tr, "filter_route_num".tr];
 
     return SizedBox(
       height: 40,
@@ -161,7 +161,7 @@ class RouteSearchScreen extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          "Available Routes",
+          "available_routes".tr,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -209,13 +209,13 @@ class RouteSearchScreen extends StatelessWidget {
       currentIndex: 0,
       selectedItemColor: Color(0xFF0066CC),
       unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: "Routes"),
-        BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: "My Ticket"),
-        BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Wallet"),
+      items: [
+        BottomNavigationBarItem(icon: const Icon(Icons.map), label: "bottom_nav_routes".tr),
+        BottomNavigationBarItem(icon: const Icon(Icons.qr_code), label: "bottom_nav_ticket".tr),
+        BottomNavigationBarItem(icon: const Icon(Icons.wallet), label: "bottom_nav_wallet".tr),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          label: "Alerts",
+          icon: const Icon(Icons.notifications),
+          label: "bottom_nav_alerts".tr,
         ),
       ],
     );

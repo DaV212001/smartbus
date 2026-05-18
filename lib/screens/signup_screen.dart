@@ -14,7 +14,7 @@ class SignupScreen extends GetView<AuthController> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
-          'Sign Up',
+          'sign_up'.tr,
           style: TextStyle(
             color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
@@ -43,42 +43,42 @@ class SignupScreen extends GetView<AuthController> {
             _buildInputField(
               context: context,
               controller: controller.nameController,
-              label: 'Full Name',
+              label: 'full_name'.tr,
               icon: LucideIcons.user,
-              hint: 'John Doe',
+              hint: 'full_name_hint'.tr,
             ),
             const SizedBox(height: 20),
             _buildInputField(
               context: context,
               controller: controller.emailController,
-              label: 'Email Address',
+              label: 'email_address'.tr,
               icon: LucideIcons.mail,
-              hint: 'you@example.com',
+              hint: 'email_hint'.tr,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 20),
             _buildInputField(
               context: context,
               controller: controller.phoneController,
-              label: 'Phone Number',
+              label: 'phone_number'.tr,
               icon: LucideIcons.phone,
-              hint: '+251 XXX XXX XXX',
+              hint: 'phone_hint'.tr,
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 20),
             _buildInputField(
               context: context,
               controller: controller.fidController,
-              label: 'Fayda ID (FID)',
+              label: 'fayda_id'.tr,
               icon: LucideIcons.fingerprint,
-              hint: 'Enter your government ID',
+              hint: 'fayda_hint'.tr,
             ),
             const SizedBox(height: 20),
             Obx(
               () => _buildInputField(
                 context: context,
                 controller: controller.passwordController,
-                label: 'Password',
+                label: 'password'.tr,
                 icon: LucideIcons.lock,
                 hint: '••••••••',
                 isPassword: true,
@@ -112,9 +112,9 @@ class SignupScreen extends GetView<AuthController> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Create Account',
-                          style: TextStyle(
+                      : Text(
+                          'create_account'.tr,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                           ),
@@ -126,15 +126,15 @@ class SignupScreen extends GetView<AuthController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Already have an account?',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                Text(
+                  'already_have_account'.tr,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
                 ),
                 TextButton(
                   onPressed: () => Get.back(),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(
+                  child: Text(
+                    'login'.tr,
+                    style: const TextStyle(
                       color: Color(0xFF2563EB),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

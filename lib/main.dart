@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:smartbus/config/storage_config.dart';
+import 'package:smartbus/config/translation.dart';
 import 'package:smartbus/controllers/auth_controller.dart';
 import 'package:smartbus/controllers/theme_mode_controller.dart';
 import 'package:smartbus/screens/login_screen.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeModeController.getThemeMode(),
           locale: ThemeModeController.getLocale(),
+          translations: AppTranslations(),
           // Route Management
           initialRoute: ConfigPreference.isUserLoggedIn() ? '/home' : '/login',
           getPages: [

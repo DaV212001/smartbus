@@ -17,7 +17,7 @@ class AlertsScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
         title: Text(
-          'Alerts',
+          'alerts'.tr,
           style: TextStyle(
             color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
@@ -29,7 +29,7 @@ class AlertsScreen extends StatelessWidget {
           TextButton(
             onPressed: () => alertController.markAllAsRead(),
             child: Text(
-              'Mark all as read',
+              'mark_all_read'.tr,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontSize: 13,
@@ -50,7 +50,7 @@ class AlertsScreen extends StatelessWidget {
         }
 
         if (alertController.alerts.isEmpty) {
-          return const Center(child: Text("No alerts yet"));
+          return Center(child: Text("no_alerts_yet".tr));
         }
 
         return RefreshIndicator(
@@ -61,7 +61,7 @@ class AlertsScreen extends StatelessWidget {
               final alert = alertController.alerts[index];
               return NotificationItem(
                 icon: _getIconForType(alert['type']),
-                title: alert['title'] ?? 'Alert',
+                title: alert['title'] ?? 'alert'.tr,
                 message: alert['message'] ?? '',
                 time: alert['time'] ?? '',
                 type: _getNotificationType(alert['type']),

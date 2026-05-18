@@ -14,7 +14,7 @@ class LoginScreen extends GetView<AuthController> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
-          'Login',
+          'login'.tr,
           style: TextStyle(
             color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
@@ -36,16 +36,16 @@ class LoginScreen extends GetView<AuthController> {
             _buildInputField(
               context: context,
               controller: controller.identifierController,
-              label: 'Phone, Email or FID',
+              label: 'login_identifier_label'.tr,
               icon: LucideIcons.user,
-              hint: 'Enter your identifier',
+              hint: 'login_identifier_hint'.tr,
             ),
             const SizedBox(height: 20),
             Obx(
               () => _buildInputField(
                 context: context,
                 controller: controller.passwordController,
-                label: 'Password',
+                label: 'password'.tr,
                 icon: LucideIcons.lock,
                 hint: '••••••••',
                 isPassword: true,
@@ -58,9 +58,9 @@ class LoginScreen extends GetView<AuthController> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {},
-                child: const Text(
-                  'Forgot password?',
-                  style: TextStyle(
+                child: Text(
+                  'forgot_password'.tr,
+                  style: const TextStyle(
                     color: Color(0xFF2563EB),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -94,9 +94,9 @@ class LoginScreen extends GetView<AuthController> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
+                      : Text(
+                          'login'.tr,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
                           ),
@@ -108,15 +108,15 @@ class LoginScreen extends GetView<AuthController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Don\'t have an account?',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                Text(
+                  'dont_have_account'.tr,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
                 ),
                 TextButton(
                   onPressed: () => Get.toNamed('/signup'),
-                  child: const Text(
-                    'Sign up',
-                    style: TextStyle(
+                  child: Text(
+                    'sign_up'.tr,
+                    style: const TextStyle(
                       color: Color(0xFF2563EB),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

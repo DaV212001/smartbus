@@ -24,7 +24,7 @@ class TicketScreen extends StatelessWidget {
         backgroundColor: theme.cardColor,
         elevation: 0,
         title: Text(
-          'My Tickets',
+          'my_tickets'.tr,
           style: TextStyle(
             color: theme.textTheme.titleMedium?.color,
             fontWeight: FontWeight.w600,
@@ -141,7 +141,7 @@ class NoActiveTicketSection extends StatelessWidget {
           Icon(LucideIcons.qrCode, size: 64, color: theme.disabledColor),
           const SizedBox(height: 16),
           Text(
-            'No Active Ticket',
+            'no_active_ticket'.tr,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -150,7 +150,7 @@ class NoActiveTicketSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Purchase a ticket to start your journey',
+            'purchase_ticket_description'.tr,
             textAlign: TextAlign.center,
             style: TextStyle(color: theme.textTheme.bodySmall?.color),
           ),
@@ -201,15 +201,15 @@ class ActiveTicketSection extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text(
-                            'TO',
-                            style: TextStyle(
+                          Text(
+                            'to'.tr,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
                             ),
                           ),
                           Text(
-                            ticket.dropoffStop?.name ?? 'Destination',
+                            ticket.dropoffStop?.name ?? 'destination'.tr,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -289,7 +289,7 @@ class ActiveTicketSection extends StatelessWidget {
                                   }
                                 }
                                 return Text(
-                                  'Expires at $timeStr',
+                                  'expires_at'.trParams({'time': timeStr}),
                                   style: const TextStyle(
                                     color: Color(0xFFF59E0B),
                                     fontWeight: FontWeight.w600,
@@ -306,10 +306,10 @@ class ActiveTicketSection extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildInfo(context, 'Passenger', 'Adult (1)'),
+                          _buildInfo(context, 'passenger'.tr, 'adult_one'.tr),
                           _buildInfo(
                             context,
-                            'Price',
+                            'price'.tr,
                             '${ticket.fareAmount.toStringAsFixed(2)} ETB',
                             crossAxis: CrossAxisAlignment.end,
                           ),
@@ -367,7 +367,7 @@ class HistorySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Ticket History',
+            'ticket_history'.tr,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -391,9 +391,9 @@ class HistorySection extends StatelessWidget {
                   color: Color(0xFF94A3B8),
                 ),
                 const SizedBox(width: 10),
-                const Text(
-                  'Search tickets...',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                Text(
+                  'search_tickets'.tr,
+                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                 ),
                 const Spacer(),
                 Container(
@@ -414,7 +414,7 @@ class HistorySection extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Filter',
+                        'filter'.tr,
                         style: TextStyle(
                           fontSize: 13,
                           color: theme.textTheme.bodySmall?.color,
@@ -432,7 +432,7 @@ class HistorySection extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(40.0),
                 child: Text(
-                  'No ticket history found',
+                  'no_ticket_history_found'.tr,
                   style: TextStyle(color: theme.disabledColor),
                 ),
               ),

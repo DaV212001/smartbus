@@ -22,7 +22,7 @@ class WalletScreen extends StatelessWidget {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
-          'My Wallet',
+          'my_wallet'.tr,
           style: TextStyle(
             color: theme.textTheme.titleLarge?.color,
             fontWeight: FontWeight.w700,
@@ -164,7 +164,7 @@ class WalletScreen extends StatelessWidget {
                       vertical: 12,
                     ),
                     child: Text(
-                      'Recent Activity',
+                      'recent_activity'.tr,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -221,9 +221,9 @@ class BalanceCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text(
-            'Total Balance',
-            style: TextStyle(color: Colors.white, fontSize: 13),
+          Text(
+            'total_balance'.tr,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
           const SizedBox(height: 8),
           Obx(
@@ -245,7 +245,7 @@ class BalanceCard extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onAddFunds,
             icon: const Icon(LucideIcons.plus, size: 18),
-            label: const Text('Add Funds'),
+            label: Text('add_funds'.tr),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white.withOpacity(0.2),
               foregroundColor: Colors.white,
@@ -268,19 +268,19 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Add Funds'),
+      title: Text('add_funds'.tr),
       content: TextField(
         controller: amountController,
         keyboardType: TextInputType.number,
-        decoration: const InputDecoration(
-          hintText: 'Enter amount',
+        decoration: InputDecoration(
+          hintText: 'enter_amount'.tr,
           suffixText: 'ETB',
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('cancel'.tr),
         ),
         Obx(() {
           final theme = Theme.of(context);
@@ -294,9 +294,9 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
               borderRadius: 8.0,
               borderWidth: 3.0,
               onTap: () {},
-              child: const Text(
-                'Adding...',
-                style: TextStyle(
+              child: Text(
+                'adding'.tr,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -310,10 +310,10 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
               if (amount != null && amount > 0) {
                 controller.addFunds(amount);
               } else {
-                Get.snackbar('Error', 'Please enter a valid amount');
+                Get.snackbar('error'.tr, 'please_enter_valid_amount'.tr);
               }
             },
-            child: const Text('Add'),
+            child: Text('add'.tr),
           );
         })
 
@@ -338,7 +338,7 @@ class TransactionList extends StatelessWidget {
               Icon(LucideIcons.layers, size: 48, color: theme.disabledColor),
               const SizedBox(height: 16),
               Text(
-                'No transactions yet',
+                'no_transactions_yet'.tr,
                 style: TextStyle(color: theme.textTheme.bodySmall?.color),
               ),
             ],
@@ -359,7 +359,7 @@ class TransactionList extends StatelessWidget {
           final isCredit = tx.type == 'CREDIT';
           return TransactionItem(
             icon: isCredit ? LucideIcons.wallet : LucideIcons.bus,
-            title: tx.description ?? 'Transaction',
+            title: tx.description ?? 'transaction'.tr,
             date: tx.createdAt.toString(),
             amount:
                 '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(2)} ETB',

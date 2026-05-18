@@ -63,14 +63,14 @@ class HomeScreen extends StatelessWidget {
             // border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
-            children: const [
-              Icon(Icons.search, color: Color(0xFF94A3B8)),
-              SizedBox(width: 12),
+            children: [
+              const Icon(Icons.search, color: Color(0xFF94A3B8)),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "Search route, stop, or destination",
+                  "search_prompt".tr,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Color(0xFF94A3B8)),
+                  style: const TextStyle(color: Color(0xFF94A3B8)),
                 ),
               ),
             ],
@@ -83,10 +83,10 @@ class HomeScreen extends StatelessWidget {
   Widget _buildFilters(BuildContext context) {
     final routeController = Get.find<RouteController>();
     final filters = [
-      {"label": "Recent", "sortBy": "createdAt", "sortOrder": "desc"},
-      {"label": "Price (Low)", "sortBy": "price", "sortOrder": "asc"},
-      {"label": "Price (High)", "sortBy": "price", "sortOrder": "desc"},
-      {"label": "Duration", "sortBy": "duration", "sortOrder": "asc"},
+      {"label": "filter_recent".tr, "sortBy": "createdAt", "sortOrder": "desc"},
+      {"label": "filter_price_low".tr, "sortBy": "price", "sortOrder": "asc"},
+      {"label": "filter_price_high".tr, "sortBy": "price", "sortOrder": "desc"},
+      {"label": "filter_duration".tr, "sortBy": "duration", "sortOrder": "asc"},
     ];
 
     return SizedBox(
@@ -152,7 +152,7 @@ class HomeScreen extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          "Available Routes",
+          "available_routes".tr,
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
