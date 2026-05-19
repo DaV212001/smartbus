@@ -7,10 +7,10 @@ import 'package:get/get.dart';
 import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../models/route.dart';
-import '../utils/templates/dio_template.dart';
 import '../utils/api_call_status.dart';
 import '../utils/error_data.dart';
 import '../utils/error_utils.dart';
+import '../utils/templates/dio_template.dart';
 
 class RouteController extends GetxController {
   final isLoading = false.obs;
@@ -181,27 +181,64 @@ class RouteController extends GetxController {
     );
   }
 
-  Future<void> searchRoutes(String query) async {
-    if (query.isEmpty) {
+  // Reactive properties to store search parameters
+  final searchDeparture = ''.obs;
+  final searchDestination = ''.obs;
+  final searchKeyword = ''.obs;
+
+  /// Trigger a search query with explicit support for all backend query parameters
+  Future<void> searchRoutesAdvanced({
+    String? q,
+    String? departure,
+    String? destination,
+  }) async {
+    // Sync state variables
+    if (q != null) searchKeyword.value = q;
+    if (departure != null) searchDeparture.value = departure;
+    if (destination != null) searchDestination.value = destination;
+
+    // If all fields are empty, clear search and exit
+    if (searchKeyword.value.isEmpty &&
+        searchDeparture.value.isEmpty &&
+        searchDestination.value.isEmpty) {
       searchResults.clear();
       searchStatus.value = ApiCallStatus.holding;
       return;
     }
+
     isLoading.value = true;
     searchStatus.value = ApiCallStatus.loading;
     searchError.value = null;
+
+    // Build query map dynamically (only include non-empty values)
+    final Map<String, String> params = {};
+    if (searchKeyword.value.isNotEmpty) params['q'] = searchKeyword.value;
+    if (searchDeparture.value.isNotEmpty)
+      params['departure'] = searchDeparture.value;
+    if (searchDestination.value.isNotEmpty)
+      params['destination'] = searchDestination.value;
+
     await DioService.dioGet(
       path: '/v1/routes/search',
-      queryParameters: {'q': query},
+      queryParameters: params,
+      options: dio_lib.Options(
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ConfigPreference.getAccessToken()}',
+        },
+      ),
       onSuccess: (response) {
-        final List items = response.data['data'] ?? [];
+        final List items =
+            response.data['data']['items'] ?? response.data['data'] ?? [];
         searchResults.value = items.map((e) => Route.fromJson(e)).toList();
+
+        // Dynamic client sorting
+        applyClientSortToSearchResults();
+
         isLoading.value = false;
-        if (searchResults.isEmpty) {
-          searchStatus.value = ApiCallStatus.empty;
-        } else {
-          searchStatus.value = ApiCallStatus.success;
-        }
+        searchStatus.value = searchResults.isEmpty
+            ? ApiCallStatus.empty
+            : ApiCallStatus.success;
       },
       onFailure: (error, response) async {
         isLoading.value = false;
@@ -211,6 +248,29 @@ class RouteController extends GetxController {
         _handleError(error, response);
       },
     );
+  }
+
+  /// Dynamic client-side sorting since backend fields 'price' & 'duration' are computed
+  void applyClientSortToSearchResults() {
+    final sortBy = currentSortBy.value;
+    final isAsc = currentSortOrder.value == 'asc';
+
+    searchResults.sort((a, b) {
+      if (sortBy == 'price') {
+        return isAsc
+            ? (a.price ?? 0.0).compareTo(b.price ?? 0.0)
+            : (b.price ?? 0.0).compareTo(a.price ?? 0.0);
+      } else if (sortBy == 'duration') {
+        return isAsc
+            ? (a.duration ?? 0.0).compareTo(b.duration ?? 0.0)
+            : (b.duration ?? 0.0).compareTo(a.duration ?? 0.0);
+      } else if (sortBy == 'routeNumber') {
+        final numA = a.routeNumber ?? '';
+        final numB = b.routeNumber ?? '';
+        return isAsc ? numA.compareTo(numB) : numB.compareTo(numA);
+      }
+      return 0;
+    });
   }
 
   Future<void> fetchRouteById(String id) async {

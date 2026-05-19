@@ -74,8 +74,8 @@ class Route {
 
     return Route(
       id: json['id']?.toString(),
-      nameEn: json['name'] ?? json['nameEn'],
-      nameAm: json['nameAm'] ?? json['name'],
+      nameEn: json['name']['en'] ?? json['nameEn'],
+      nameAm: json['name']['am'] ?? json['nameAm'],
       routeNumber: json['routeNumber'],
       description: json['description'],
       price: convertedPrice,

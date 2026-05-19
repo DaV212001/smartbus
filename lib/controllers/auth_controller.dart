@@ -5,10 +5,12 @@ import 'package:get/get.dart';
 import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../utils/templates/dio_template.dart';
+import '../widgets/barcode_scanner_widget.dart';
 
 class AuthController extends GetxController {
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
+  final loginType = "PHONE".obs; // PHONE, EMAIL, FID
 
   // Form controllers
   final identifierController = TextEditingController();
@@ -18,9 +20,14 @@ class AuthController extends GetxController {
   final fidController = TextEditingController();
   final nameController = TextEditingController();
   final otpController = TextEditingController();
+  final newPasswordController = TextEditingController();
   final otp = "".obs;
 
   void togglePasswordVisibility() => isPasswordVisible.toggle();
+
+  void setLoginType(String type) {
+    loginType.value = type;
+  }
 
   void handleOtpInput(String value) {
     if (otp.value.length < 6) {
@@ -34,8 +41,41 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> scanBarcode() async {
+    final result = await Get.to(() => const BarcodeScannerWidget());
+    if (result != null && result is String) {
+      fidController.text = result;
+      Get.snackbar('Success', 'FID scanned successfully');
+    }
+  }
+
   Future<void> login() async {
-    final identifier = identifierController.text.trim();
+    String identifier = "";
+    String type = loginType.value;
+
+    if (type == "PHONE") {
+      identifier = phoneController.text.trim();
+      if (!RegExp(r'^(09|07)\d{8}$').hasMatch(identifier)) {
+        Get.snackbar(
+          'Error',
+          'Invalid phone number. Must start with 09 or 07 and be 10 digits.',
+        );
+        return;
+      }
+    } else if (type == "EMAIL") {
+      identifier = emailController.text.trim();
+      if (!GetUtils.isEmail(identifier)) {
+        Get.snackbar('Error', 'Invalid email address.');
+        return;
+      }
+    } else if (type == "FID") {
+      identifier = fidController.text.trim();
+      if (identifier.length != 16) {
+        Get.snackbar('Error', 'FID must be exactly 16 characters.');
+        return;
+      }
+    }
+
     final password = passwordController.text;
 
     if (identifier.isEmpty || password.isEmpty) {
@@ -47,21 +87,12 @@ class AuthController extends GetxController {
       return;
     }
 
-    // Determine identifierType
-    String identifierType = 'FID'; // Default
-    if (GetUtils.isEmail(identifier)) {
-      identifierType = 'EMAIL';
-    } else if (RegExp(r'^(09|07)\d{8}$').hasMatch(identifier) ||
-        GetUtils.isPhoneNumber(identifier)) {
-      identifierType = 'PHONE';
-    }
-
     isLoading.value = true;
     await DioService.dioPost(
       path: '/v1/auth/login',
       data: {
         'identifier': identifier,
-        'identifierType': identifierType,
+        'identifierType': type,
         'password': password,
       },
       onSuccess: (response) async {
@@ -126,11 +157,21 @@ class AuthController extends GetxController {
 
     isLoading.value = true;
     final phone = Get.arguments?['phone'] ?? phoneController.text;
+    final purpose = Get.arguments?['purpose'] ?? 'REGISTRATION';
 
     await DioService.dioPost(
       path: '/v1/auth/verify-otp',
-      data: {'phone': phone, 'code': otp.value, 'purpose': 'REGISTRATION'},
+      data: {'phone': phone, 'code': otp.value, 'purpose': purpose},
       onSuccess: (response) async {
+        if (purpose == 'FORGOT_PASSWORD') {
+          isLoading.value = false;
+          Get.toNamed(
+            '/reset-password',
+            arguments: {'phone': phone, 'code': otp.value},
+          );
+          return;
+        }
+
         final data = response.data['data'];
 
         if (data != null && data['accessToken'] != null) {
@@ -163,10 +204,11 @@ class AuthController extends GetxController {
   Future<void> resendOtp() async {
     isLoading.value = true;
     final phone = Get.arguments?['phone'] ?? phoneController.text;
+    final purpose = Get.arguments?['purpose'] ?? 'REGISTRATION';
 
     await DioService.dioPost(
       path: '/v1/auth/resend-otp',
-      data: {'phone': phone, 'purpose': 'REGISTRATION'},
+      data: {'phone': phone, 'purpose': purpose},
       onSuccess: (response) {
         isLoading.value = false;
         Get.snackbar(
@@ -174,6 +216,71 @@ class AuthController extends GetxController {
           'OTP has been resent successfully',
           snackPosition: SnackPosition.BOTTOM,
         );
+      },
+      onFailure: (error, response) => _handleError(error, response),
+    );
+  }
+
+  Future<void> forgotPassword() async {
+    if (phoneController.text.isEmpty || fidController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please enter your phone number and FID',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    isLoading.value = true;
+    await DioService.dioPost(
+      path: '/v1/auth/forgot-password',
+      data: {
+        'phone': phoneController.text.trim(),
+        'fid': fidController.text.trim(),
+      },
+      onSuccess: (response) {
+        isLoading.value = false;
+        Get.toNamed(
+          '/verify-otp',
+          arguments: {
+            'phone': phoneController.text.trim(),
+            'purpose': 'FORGOT_PASSWORD',
+          },
+        );
+      },
+      onFailure: (error, response) => _handleError(error, response),
+    );
+  }
+
+  Future<void> resetPassword() async {
+    if (newPasswordController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please enter a new password',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    isLoading.value = true;
+    final phone = Get.arguments?['phone'];
+    final code = Get.arguments?['code'];
+
+    await DioService.dioPost(
+      path: '/v1/auth/reset-password',
+      data: {
+        'phone': phone,
+        'code': code,
+        'newPassword': newPasswordController.text,
+      },
+      onSuccess: (response) {
+        isLoading.value = false;
+        Get.snackbar(
+          'Success',
+          'Password reset successfully',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        Get.offAllNamed('/login');
       },
       onFailure: (error, response) => _handleError(error, response),
     );

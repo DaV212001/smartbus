@@ -33,13 +33,71 @@ class LoginScreen extends GetView<AuthController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            _buildInputField(
-              context: context,
-              controller: controller.identifierController,
-              label: 'login_identifier_label'.tr,
-              icon: LucideIcons.user,
-              hint: 'login_identifier_hint'.tr,
+            Obx(
+              () => Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                ),
+                child: Row(
+                  children: [
+                    _buildTypeToggle(
+                      context,
+                      'PHONE',
+                      LucideIcons.phone,
+                      'Phone',
+                    ),
+                    _buildTypeToggle(
+                      context,
+                      'EMAIL',
+                      LucideIcons.mail,
+                      'Email',
+                    ),
+                    _buildTypeToggle(context, 'FID', LucideIcons.qrCode, 'FID'),
+                  ],
+                ),
+              ),
             ),
+            const SizedBox(height: 24),
+            Obx(() {
+              if (controller.loginType.value == 'PHONE') {
+                return _buildInputField(
+                  context: context,
+                  controller: controller.phoneController,
+                  label: 'phone_number'.tr,
+                  icon: LucideIcons.phone,
+                  hint: '09xxxxxxxx',
+                  keyboardType: TextInputType.phone,
+                );
+              } else if (controller.loginType.value == 'EMAIL') {
+                return _buildInputField(
+                  context: context,
+                  controller: controller.emailController,
+                  label: 'email'.tr,
+                  icon: LucideIcons.mail,
+                  hint: 'example@mail.com',
+                  keyboardType: TextInputType.emailAddress,
+                );
+              } else {
+                return _buildInputField(
+                  context: context,
+                  controller: controller.fidController,
+                  label: 'FID',
+                  icon: LucideIcons.qrCode,
+                  hint: '16-character FID',
+                  suffixIcon: IconButton(
+                    icon: const Icon(
+                      LucideIcons.scanLine,
+                      color: Color(0xFF2563EB),
+                    ),
+                    onPressed: controller.scanBarcode,
+                  ),
+                );
+              }
+            }),
             const SizedBox(height: 20),
             Obx(
               () => _buildInputField(
@@ -57,7 +115,7 @@ class LoginScreen extends GetView<AuthController> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () => Get.toNamed('/forgot-password'),
                 child: Text(
                   'forgot_password'.tr,
                   style: const TextStyle(
@@ -110,7 +168,10 @@ class LoginScreen extends GetView<AuthController> {
               children: [
                 Text(
                   'dont_have_account'.tr,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 14,
+                  ),
                 ),
                 TextButton(
                   onPressed: () => Get.toNamed('/signup'),
@@ -131,6 +192,47 @@ class LoginScreen extends GetView<AuthController> {
     );
   }
 
+  Widget _buildTypeToggle(
+    BuildContext context,
+    String type,
+    IconData icon,
+    String label,
+  ) {
+    final isSelected = controller.loginType.value == type;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => controller.setLoginType(type),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildInputField({
     required BuildContext context,
     required TextEditingController controller,
@@ -140,6 +242,8 @@ class LoginScreen extends GetView<AuthController> {
     bool isPassword = false,
     bool obscureText = false,
     VoidCallback? toggleVisibility,
+    TextInputType? keyboardType,
+    Widget? suffixIcon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,6 +266,7 @@ class LoginScreen extends GetView<AuthController> {
           child: TextField(
             controller: controller,
             obscureText: obscureText,
+            keyboardType: keyboardType,
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -182,7 +287,7 @@ class LoginScreen extends GetView<AuthController> {
                       ),
                       onPressed: toggleVisibility,
                     )
-                  : null,
+                  : suffixIcon,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),

@@ -1,17 +1,46 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/route_controller.dart';
+import '../utils/api_call_status.dart';
 import 'home_screen.dart';
 
-class RouteSearchScreen extends StatelessWidget {
+class RouteSearchScreen extends StatefulWidget {
   const RouteSearchScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final routeController = Get.find<RouteController>();
-    final searchController = TextEditingController();
+  State<RouteSearchScreen> createState() => _RouteSearchScreenState();
+}
 
+class _RouteSearchScreenState extends State<RouteSearchScreen> {
+  final routeController = Get.find<RouteController>();
+  final departureTextController = TextEditingController();
+  final destinationTextController = TextEditingController();
+
+  Timer? _debounceTimer;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    departureTextController.dispose();
+    destinationTextController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      routeController.searchRoutesAdvanced(
+        departure: departureTextController.text.trim(),
+        destination: destinationTextController.text.trim(),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -39,7 +68,7 @@ class RouteSearchScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    _searchSection(context, routeController, searchController),
+                    _searchSection(context),
                     _sectionHeader(context),
                     _routeList(context, routeController),
                   ],
@@ -53,20 +82,13 @@ class RouteSearchScreen extends StatelessWidget {
   }
 
   // ================= SEARCH =================
-  Widget _searchSection(
-    BuildContext context,
-    RouteController controller,
-    TextEditingController textController,
-  ) {
+  Widget _searchSection(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-        border: Border(
-          // bottom: BorderSide(color: Theme.of(context).dividerColor),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,12 +120,16 @@ class RouteSearchScreen extends StatelessWidget {
                     icon: Icons.circle,
                     hint: "departure_stop".tr,
                     context: context,
+                    controller: departureTextController,
+                    onChanged: (value) => _onSearchChanged(),
                   ),
                   const SizedBox(height: 12),
                   _SearchField(
                     icon: Icons.location_on,
                     hint: "destination_stop".tr,
                     context: context,
+                    controller: destinationTextController,
+                    onChanged: (value) => _onSearchChanged(),
                   ),
                 ],
               ),
@@ -117,40 +143,60 @@ class RouteSearchScreen extends StatelessWidget {
   }
 
   Widget _filters(BuildContext context) {
-    final filters = ["filter_lowest_price".tr, "filter_fastest".tr, "filter_route_num".tr];
+    final List<Map<String, String>> filters = [
+      {"label": "filter_lowest_price".tr, "key": "price", "order": "asc"},
+      {"label": "filter_fastest".tr, "key": "duration", "order": "asc"},
+      {"label": "filter_route_num".tr, "key": "routeNumber", "order": "asc"},
+    ];
 
     return SizedBox(
       height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: filters.length,
-        itemBuilder: (context, i) {
-          final active = i == 0;
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: active
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(20),
-              border: active
-                  ? null
-                  : Border.all(color: Theme.of(context).dividerColor),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              filters[i],
-              style: TextStyle(
-                color: active
-                    ? Colors.white
-                    : Theme.of(context).textTheme.bodyMedium?.color,
-                fontSize: 13,
+      child: Obx(() {
+        final activeSortBy = routeController.currentSortBy.value;
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: filters.length,
+          itemBuilder: (context, i) {
+            final filter = filters[i];
+            final String key = filter["key"]!;
+            final String order = filter["order"]!;
+            final bool isActive = activeSortBy == key;
+
+            return GestureDetector(
+              onTap: () {
+                routeController.currentSortBy.value = key;
+                routeController.currentSortOrder.value = order;
+                routeController.applyClientSortToSearchResults();
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: isActive
+                      ? null
+                      : Border.all(color: Theme.of(context).dividerColor),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  filter["label"]!,
+                  style: TextStyle(
+                    color: isActive
+                        ? Colors.white
+                        : Theme.of(context).textTheme.bodyMedium?.color,
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      }),
     );
   }
 
@@ -174,15 +220,48 @@ class RouteSearchScreen extends StatelessWidget {
 
   // ================= ROUTES =================
   Widget _routeList(BuildContext context, RouteController controller) {
+    final theme = Theme.of(context);
     return Obx(() {
+      if (controller.isLoading.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40.0),
+          child: Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      if (controller.searchStatus.value == ApiCallStatus.empty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.search_off_rounded,
+                  size: 48,
+                  color: theme.disabledColor,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'no_routes_found'.tr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color?.withValues(
+                      alpha: 0.7,
+                    ),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
       final list =
           controller.searchResults.isEmpty && !controller.isLoading.value
           ? controller.routes
           : controller.searchResults;
-
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -201,24 +280,6 @@ class RouteSearchScreen extends StatelessWidget {
         ),
       );
     });
-  }
-
-  // ================= NAV =================
-  Widget _bottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: Color(0xFF0066CC),
-      unselectedItemColor: Colors.grey,
-      items: [
-        BottomNavigationBarItem(icon: const Icon(Icons.map), label: "bottom_nav_routes".tr),
-        BottomNavigationBarItem(icon: const Icon(Icons.qr_code), label: "bottom_nav_ticket".tr),
-        BottomNavigationBarItem(icon: const Icon(Icons.wallet), label: "bottom_nav_wallet".tr),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.notifications),
-          label: "bottom_nav_alerts".tr,
-        ),
-      ],
-    );
   }
 }
 
@@ -245,6 +306,9 @@ class _SearchField extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+        ),
       ),
       child: TextField(
         controller: controller,

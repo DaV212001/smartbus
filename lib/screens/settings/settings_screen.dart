@@ -98,10 +98,7 @@ class SettingsScreen extends StatelessWidget {
                                 ThemeModeController.toggleThemeMode(); // Toggle theme
                               },
                               style: ToggleStyle(
-                                indicatorColor:
-                                    ThemeModeController.isLightTheme.value
-                                    ? maincolor
-                                    : null,
+                                indicatorColor: maincolor,
                                 // backgroundGradient: LinearGradient(colors: [
                                 //   ThemeModeController.isLightTheme.value
                                 //       ? Colors.white

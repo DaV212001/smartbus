@@ -34,8 +34,8 @@ class Stop {
     // List<dynamic> names = (json['names'] as List);
     return Stop(
       id: json['id'],
-      nameEn: json['name'],
-      nameAm: json['name'],
+      nameEn: json['name']['en'] ?? '',
+      nameAm: json['name']['am'] ?? '',
       sequence: json['sequence'],
       distanceToNext: double.tryParse((json['distanceToNext']).toString()),
       durationFromPrevious: double.tryParse(

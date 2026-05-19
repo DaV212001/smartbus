@@ -7,8 +7,10 @@ import 'package:smartbus/controllers/auth_controller.dart';
 import 'package:smartbus/controllers/theme_mode_controller.dart';
 import 'package:smartbus/screens/login_screen.dart';
 import 'package:smartbus/screens/main_layout_screen.dart';
+import 'package:smartbus/screens/reset_password_screen.dart';
 import 'package:smartbus/screens/route_detail_screen.dart';
 import 'package:smartbus/screens/route_search_screen.dart';
+import 'package:smartbus/screens/settings/password/forgot_password_screen.dart';
 import 'package:smartbus/screens/signup_screen.dart';
 import 'package:smartbus/screens/verify_otp_screen.dart';
 
@@ -50,6 +52,16 @@ class MyApp extends StatelessWidget {
             GetPage(
               name: '/signup',
               page: () => const SignupScreen(),
+              transition: Transition.rightToLeft,
+            ),
+            GetPage(
+              name: '/forgot-password',
+              page: () => const ForgotPasswordScreen(),
+              transition: Transition.rightToLeft,
+            ),
+            GetPage(
+              name: '/reset-password',
+              page: () => const ResetPasswordScreen(),
               transition: Transition.rightToLeft,
             ),
             GetPage(

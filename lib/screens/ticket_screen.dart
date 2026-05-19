@@ -47,24 +47,30 @@ class TicketScreen extends StatelessWidget {
               children: [
                 ShimmerWrapper(
                   isEnabled: true,
-                  child: Container(
-                    width: double.infinity,
-                    height: 320,
-                    margin: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Container(
+                      width: double.infinity,
+                      height: 280,
+                      margin: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: ShimmerWrapper(
-                    isEnabled: true,
-                    child: Container(
-                      width: 120,
-                      height: 20,
-                      color: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: Text(
+                    'ticket_history'.tr,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                 ),
@@ -74,14 +80,61 @@ class TicketScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   itemCount: 3,
                   itemBuilder: (context, index) {
-                    return ShimmerWrapper(
-                      isEnabled: true,
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        height: 70,
                         margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: theme.cardColor,
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ShimmerWrapper(
+                          isEnabled: true,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'title',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: theme.textTheme.bodyLarge?.color,
+                                    ),
+                                  ),
+                                  Text(
+                                    'meta..........',
+                                    style: const TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  // color: statusColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'status'.toUpperCase(),
+                                  style: TextStyle(
+                                    // color: statusColor,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -98,23 +151,27 @@ class TicketScreen extends StatelessWidget {
           loadingChild: shimmerLoading(),
           errorChild: null,
           onReload: controller.fetchTickets,
-          child: RefreshIndicator(
-            onRefresh: controller.fetchTickets,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (controller.activeTicket.value != null)
-                    ActiveTicketSection(ticket: controller.activeTicket.value!)
-                  else
-                    const NoActiveTicketSection(),
-                  HistorySection(history: controller.ticketHistory),
-                ],
+          child:
+              // shimmerLoading(),
+              RefreshIndicator(
+                onRefresh: controller.fetchTickets,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (controller.activeTicket.value != null)
+                        ActiveTicketSection(
+                          ticket: controller.activeTicket.value!,
+                        )
+                      else
+                        const NoActiveTicketSection(),
+                      HistorySection(history: controller.ticketHistory),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
         );
       }),
     );
@@ -393,7 +450,10 @@ class HistorySection extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   'search_tickets'.tr,
-                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 14,
+                  ),
                 ),
                 const Spacer(),
                 Container(

@@ -41,10 +41,10 @@ class HomeScreen extends StatelessWidget {
               color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
-          CircleAvatar(
-            backgroundColor: Theme.of(context).cardColor,
-            child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
-          ),
+          // CircleAvatar(
+          //   backgroundColor: Theme.of(context).cardColor,
+          //   child: Icon(Icons.person, color: Theme.of(context).iconTheme.color),
+          // ),
         ],
       ),
     );

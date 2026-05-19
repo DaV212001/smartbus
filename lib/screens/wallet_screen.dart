@@ -31,18 +31,18 @@ class WalletScreen extends StatelessWidget {
         ),
         centerTitle: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: theme.cardColor,
-              radius: 16,
-              child: Icon(
-                LucideIcons.moreHorizontal,
-                size: 18,
-                color: theme.iconTheme.color,
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 16.0),
+          //   child: CircleAvatar(
+          //     backgroundColor: theme.cardColor,
+          //     radius: 16,
+          //     child: Icon(
+          //       LucideIcons.moreHorizontal,
+          //       size: 18,
+          //       color: theme.iconTheme.color,
+          //     ),
+          //   ),
+          // ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -58,24 +58,30 @@ class WalletScreen extends StatelessWidget {
               children: [
                 ShimmerWrapper(
                   isEnabled: true,
-                  child: Container(
-                    width: double.infinity,
-                    height: 180,
-                    margin: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.grey[300],
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Container(
+                      width: double.infinity,
+                      height: 180,
+                      margin: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.grey[300],
+                      ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: ShimmerWrapper(
-                    isEnabled: true,
-                    child: Container(
-                      width: 120,
-                      height: 20,
-                      color: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  child: Text(
+                    'recent_activity'.tr,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                 ),
@@ -104,12 +110,15 @@ class WalletScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    width: 150,
-                                    height: 14,
-                                    color: Colors.grey[300],
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Container(
+                                      width: 150,
+                                      height: 14,
+                                      color: Colors.grey[300],
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  // const SizedBox(height: 8),
                                   Container(
                                     width: 100,
                                     height: 12,
@@ -143,43 +152,44 @@ class WalletScreen extends StatelessWidget {
             await controller.fetchWalletData();
             await controller.fetchTransactions();
           },
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await controller.fetchWalletData();
-              await controller.fetchTransactions();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BalanceCard(
-                    controller: controller,
-                    balance: controller.balance.value,
-                    onAddFunds: () => _showAddFundsDialog(context, controller),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    child: Text(
-                      'recent_activity'.tr,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: theme.textTheme.titleLarge?.color,
+          child:
+              // shimmerLoading(),
+              RefreshIndicator(
+                onRefresh: () async {
+                  await controller.fetchWalletData();
+                  await controller.fetchTransactions();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BalanceCard(
+                        controller: controller,
+                        balance: controller.balance.value,
+                        onAddFunds: () =>
+                            _showAddFundsDialog(context, controller),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        child: Text(
+                          'recent_activity'.tr,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: theme.textTheme.titleLarge?.color,
+                          ),
+                        ),
+                      ),
+                      TransactionList(transactions: controller.transactions),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  TransactionList(
-                    transactions: controller.transactions,
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
-            ),
-          ),
         );
       }),
     );
@@ -209,11 +219,14 @@ class BalanceCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+          colors: [
+            theme.primaryColor,
+            theme.primaryColor.withValues(alpha: 0.8),
+          ],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.primaryColor.withOpacity(0.2),
+            color: theme.primaryColor.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -228,7 +241,8 @@ class BalanceCard extends StatelessWidget {
           const SizedBox(height: 8),
           Obx(
             () => ShimmerWrapper(
-              isEnabled: controller.balanceStatus.value == ApiCallStatus.loading,
+              isEnabled:
+                  controller.balanceStatus.value == ApiCallStatus.loading,
               child: Text(
                 '${balance.toStringAsFixed(2)} ETB',
                 style: const TextStyle(
@@ -247,7 +261,7 @@ class BalanceCard extends StatelessWidget {
             icon: const Icon(LucideIcons.plus, size: 18),
             label: Text('add_funds'.tr),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
               foregroundColor: Colors.white,
               elevation: 0,
               shape: const StadiumBorder(
@@ -284,7 +298,8 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
         ),
         Obx(() {
           final theme = Theme.of(context);
-          final isLoading = controller.topupStatus.value == ApiCallStatus.loading;
+          final isLoading =
+              controller.topupStatus.value == ApiCallStatus.loading;
           if (isLoading) {
             return LoadingAnimatedButton(
               width: 100,
@@ -315,8 +330,7 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
             },
             child: Text('add'.tr),
           );
-        })
-
+        }),
       ],
     ),
   );
@@ -346,118 +360,314 @@ class TransactionList extends StatelessWidget {
         ),
       );
     }
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        border: Border(
-          top: BorderSide(color: theme.dividerColor),
-          bottom: BorderSide(color: theme.dividerColor),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: transactions.map((tx) {
-          final isCredit = tx.type == 'CREDIT';
-          return TransactionItem(
-            icon: isCredit ? LucideIcons.wallet : LucideIcons.bus,
-            title: tx.description ?? 'transaction'.tr,
-            date: tx.createdAt.toString(),
-            amount:
-                '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(2)} ETB',
-            type: isCredit ? TransactionType.credit : TransactionType.debit,
-          );
+          return TransactionItem(transaction: tx);
         }).toList(),
       ),
     );
   }
 }
 
-enum TransactionType { credit, debit, refund }
-
 class TransactionItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String date;
-  final String amount;
-  final TransactionType type;
+  final WalletTransaction transaction;
 
-  const TransactionItem({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.date,
-    required this.amount,
-    required this.type,
-  });
+  const TransactionItem({super.key, required this.transaction});
+
+  IconData _getIcon(WalletTransactionType type) {
+    switch (type) {
+      case WalletTransactionType.TOPUP:
+        return LucideIcons.arrowDownLeft;
+      case WalletTransactionType.TICKET_PURCHASE:
+        return LucideIcons.ticket;
+      case WalletTransactionType.REFUND:
+        return LucideIcons.rotateCcw;
+      case WalletTransactionType.ADJUSTMENT:
+        return LucideIcons.sliders;
+      case WalletTransactionType.UNKNOWN:
+        return LucideIcons.wallet;
+    }
+  }
+
+  String _getLocalizedTypeName(WalletTransactionType type) {
+    switch (type) {
+      case WalletTransactionType.TOPUP:
+        return 'tx_type_topup'.tr;
+      case WalletTransactionType.TICKET_PURCHASE:
+        return 'tx_type_ticket_purchase'.tr;
+      case WalletTransactionType.REFUND:
+        return 'tx_type_refund'.tr;
+      case WalletTransactionType.ADJUSTMENT:
+        return 'tx_type_adjustment'.tr;
+      case WalletTransactionType.UNKNOWN:
+        return 'tx_type_unknown'.tr;
+    }
+  }
+
+  Color _getTypeColor(WalletTransactionType type) {
+    switch (type) {
+      case WalletTransactionType.TOPUP:
+        return const Color(0xFF10B981); // Emerald
+      case WalletTransactionType.TICKET_PURCHASE:
+        return const Color(0xFF3B82F6); // Indigo/Blue
+      case WalletTransactionType.REFUND:
+        return const Color(0xFF06B6D4); // Teal
+      case WalletTransactionType.ADJUSTMENT:
+        return const Color(0xFFF59E0B); // Amber
+      case WalletTransactionType.UNKNOWN:
+        return const Color(0xFF6B7280); // Gray
+    }
+  }
+
+  Color _getStatusBgColor(WalletTransactionStatus status) {
+    switch (status) {
+      case WalletTransactionStatus.PENDING:
+        return const Color(0xFFF59E0B).withValues(alpha: 0.1);
+      case WalletTransactionStatus.COMPLETED:
+        return const Color(0xFF0B66B2).withValues(alpha: 0.1);
+      case WalletTransactionStatus.FAILED:
+        return const Color(0xFFEF4444).withValues(alpha: 0.1);
+      case WalletTransactionStatus.REVERSED:
+        return const Color(0xFF6B7280).withValues(alpha: 0.1);
+      case WalletTransactionStatus.UNKNOWN:
+        return const Color(0xFF94A3B8).withValues(alpha: 0.1);
+    }
+  }
+
+  Color _getStatusTextColor(WalletTransactionStatus status) {
+    switch (status) {
+      case WalletTransactionStatus.PENDING:
+        return const Color(0xFFD97706);
+      case WalletTransactionStatus.COMPLETED:
+        return const Color(0xFF0B66B2);
+      case WalletTransactionStatus.FAILED:
+        return const Color(0xFFDC2626);
+      case WalletTransactionStatus.REVERSED:
+        return const Color(0xFF4B5563);
+      case WalletTransactionStatus.UNKNOWN:
+        return const Color(0xFF64748B);
+    }
+  }
+
+  String _getLocalizedStatusName(WalletTransactionStatus status) {
+    switch (status) {
+      case WalletTransactionStatus.PENDING:
+        return 'tx_status_pending'.tr;
+      case WalletTransactionStatus.COMPLETED:
+        return 'tx_status_completed'.tr;
+      case WalletTransactionStatus.FAILED:
+        return 'tx_status_failed'.tr;
+      case WalletTransactionStatus.REVERSED:
+        return 'tx_status_reversed'.tr;
+      case WalletTransactionStatus.UNKNOWN:
+        return 'tx_status_unknown'.tr;
+    }
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final month = months[dt.month - 1];
+    final day = dt.day.toString().padLeft(2, '0');
+    final year = dt.year;
+    final hourInt = dt.hour;
+    final period = hourInt >= 12 ? 'PM' : 'AM';
+    final hour = (hourInt % 12 == 0 ? 12 : hourInt % 12).toString().padLeft(
+      2,
+      '0',
+    );
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return '$month $day, $year • $hour:$minute $period';
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    Color iconColor;
-    Color bgColor;
-    Color amountColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final txType = transaction.transactionType;
+    final txStatus = transaction.transactionStatus;
+    final isCredit = transaction.isCredit;
 
-    switch (type) {
-      case TransactionType.credit:
-        iconColor = const Color(0xFF10B981);
-        bgColor = iconColor.withOpacity(0.1);
-        amountColor = iconColor;
-        break;
-      case TransactionType.debit:
-        iconColor = const Color(0xFFEF4444);
-        bgColor = iconColor.withOpacity(0.1);
-        break;
-      case TransactionType.refund:
-        iconColor = const Color(0xFFF59E0B);
-        bgColor = iconColor.withOpacity(0.1);
-        amountColor = const Color(0xFF10B981);
-        break;
-    }
+    final typeColor = _getTypeColor(txType);
+    final statusBg = _getStatusBgColor(txStatus);
+    final statusText = _getStatusTextColor(txStatus);
+
+    final amountPrefix = isCredit ? '+' : '-';
+    final amountColor = isCredit
+        ? const Color(0xFF0B66B2)
+        : theme.textTheme.bodyLarge?.color;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.dividerColor)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-            child: Icon(icon, color: iconColor, size: 20),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        color: theme.cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left Section: Icon inside beautiful soft circular background
+            // Container(
+            //   alignment: Alignment.center,
+            //   width: 44,
+            //   height: 44,
+            //   decoration: BoxDecoration(
+            //     color: typeColor.withValues(alpha: 0.1),
+            //     shape: BoxShape.circle,
+            //   ),
+            //   child: Icon(
+            //     _getIcon(txType),
+            //     color: typeColor,
+            //     size: 20,
+            //   ),
+            // ),
+            // const SizedBox(width: 14),
+
+            // Middle Section: Type, description, formatted date
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Type Name
+                  Text(
+                    _getLocalizedTypeName(txType),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: theme.textTheme.titleMedium?.color,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  // Description (if any)
+                  if (transaction.description != null &&
+                      transaction.description!.trim().isNotEmpty &&
+                      transaction.description != transaction.type) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      transaction.description!,
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(
+                          alpha: 0.7,
+                        ),
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+
+                  const SizedBox(height: 6),
+
+                  // Date & Payment Method Row
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.calendar,
+                        size: 11,
+                        color: theme.iconTheme.color?.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDateTime(transaction.createdAt),
+                        style: TextStyle(
+                          color: theme.textTheme.bodySmall?.color,
+                          fontSize: 11,
+                        ),
+                      ),
+                      if (transaction.paymentMethod != null &&
+                          transaction.paymentMethod!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.dividerColor.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            transaction.paymentMethod!.toUpperCase(),
+                            style: TextStyle(
+                              color: theme.textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.8),
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Right Section: Status Badge (Top-Right) & Amount (Bottom-Right)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: theme.textTheme.titleMedium?.color,
+                // Top-Right: Status Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusBg,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _getLocalizedStatusName(txStatus),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: statusText,
+                    ),
                   ),
                 ),
+
+                // Bottom-Right: Amount
                 Text(
-                  date,
+                  '$amountPrefix ${transaction.amount.toStringAsFixed(2)} ETB',
                   style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    color: amountColor,
                   ),
                 ),
               ],
             ),
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: amountColor,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
