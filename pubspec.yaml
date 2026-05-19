@@ -62,6 +62,7 @@ dependencies:
   auto_size_text: ^3.0.0
   ionicons: ^0.2.2
   speech_to_text: ^7.0.0
+  webview_flutter: ^4.13.1
 
 dev_dependencies:
   flutter_test:

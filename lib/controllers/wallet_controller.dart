@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../models/transaction.dart';
+import '../screens/chapa_payment_screen.dart';
 import '../utils/templates/dio_template.dart';
 import '../utils/api_call_status.dart';
 import '../utils/error_data.dart';
@@ -143,15 +144,33 @@ class WalletController extends GetxController {
         'amount': (amount * 100).toDouble(), // Convert to santim (minor units)
         'paymentMethod': 'card', // Default payment method
       },
-      onSuccess: (response) {
-        Get.snackbar('Success', 'Funds added successfully');
-        _activeIdempotencyKey = null; // Clear on success
-        _lastAttemptedAmount = null;
+      onSuccess: (response) async {
         isWalletLoading.value = false;
         topupStatus.value = ApiCallStatus.success;
-        fetchWalletData();
+
         if (Get.isDialogOpen ?? false) {
           Get.back();
+        }
+
+        final dynamic resData = response.data['data'] ?? response.data;
+        final String? paymentUrl = resData != null ? resData['paymentUrl'] : null;
+
+        if (paymentUrl != null && paymentUrl.isNotEmpty) {
+          final bool? isPaymentSuccess = await Get.to<bool>(
+            () => ChapaPaymentScreen(paymentUrl: paymentUrl),
+          );
+
+          if (isPaymentSuccess == true) {
+            Get.snackbar('Success', 'Funds added successfully');
+            _activeIdempotencyKey = null; // Clear on success
+            _lastAttemptedAmount = null;
+            fetchWalletData();
+            fetchTransactions();
+          } else {
+            Get.snackbar('Payment', 'Payment not completed or cancelled');
+          }
+        } else {
+          Get.snackbar('Error', 'Payment URL not found in response');
         }
       },
       onFailure: (error, response) async {

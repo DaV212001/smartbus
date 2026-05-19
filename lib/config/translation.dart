@@ -100,6 +100,11 @@ class AppTranslations extends Translations {
       'tx_status_failed': 'Failed',
       'tx_status_reversed': 'Reversed',
       'tx_status_unknown': 'Unknown',
+      'cancel_payment_title': 'Cancel Payment',
+      'cancel_payment_message': 'Are you sure you want to cancel the payment? If you have already paid, please wait a few seconds for the receipt page to load.',
+      'yes_cancel': 'Yes, Cancel',
+      'no': 'No',
+      'payment_checkout': 'Payment Checkout',
 
       // Ticket / My Tickets Screen
       'my_tickets': 'My Tickets',
@@ -306,6 +311,11 @@ class AppTranslations extends Translations {
       'tx_status_failed': 'አልተሳካም',
       'tx_status_reversed': 'ተመልሷል',
       'tx_status_unknown': 'ያልታወቀ',
+      'cancel_payment_title': 'ክፍያውን ይሰርዙ',
+      'cancel_payment_message': 'ክፍያውን ለመሰረዝ እርግጠኛ ነዎት? ቀደም ብለው ከከፈሉ እባክዎ ደረሰኙ እስኪጫን ጥቂት ሰኮንዶች ይጠብቁ።',
+      'yes_cancel': 'አዎ፣ ሰርዝ',
+      'no': 'አይ',
+      'payment_checkout': 'ክፍያ ማጠናቀቂያ',
 
       // Ticket / My Tickets Screen
       'my_tickets': 'የእኔ ትኬቶች',

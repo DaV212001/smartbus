@@ -334,9 +334,8 @@ class BalanceCard extends StatelessWidget {
 void _showAddFundsDialog(BuildContext context, WalletController controller) {
   final amountController = TextEditingController();
   controller.prepareNewTopUp();
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
+  Get.dialog(
+    AlertDialog(
       title: Text('add_funds'.tr),
       content: TextField(
         controller: amountController,
@@ -348,7 +347,7 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
           child: Text('cancel'.tr),
         ).animateOnPress(),
         Obx(() {
