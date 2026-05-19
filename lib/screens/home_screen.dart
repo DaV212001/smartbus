@@ -1,9 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import 'package:smartbus/controllers/theme_mode_controller.dart';
 
 import '../controllers/route_controller.dart';
+import '../utils/animations.dart';
 import '../utils/templates/loaded_widgets_template.dart';
 import '../utils/wrappers/shimmer_wrapper.dart';
+
+final routeCardAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    MoveEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: const Offset(0.0, 30.0),
+      end: const Offset(0.0, 0.0),
+    ),
+  ],
+);
+
+final searchBarAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 500),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    MoveEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 500),
+      begin: const Offset(0.0, -10.0),
+      end: const Offset(0.0, 0.0),
+    ),
+  ],
+);
+
+final filterAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 500),
+      begin: 0.0,
+      end: 1.0,
+    ),
+  ],
+);
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -58,7 +114,7 @@ class HomeScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
             // border: Border.all(color: Theme.of(context).dividerColor),
           ),
@@ -77,7 +133,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ).animateOnPageLoad(searchBarAnimation).animateOnPress();
   }
 
   Widget _buildFilters(BuildContext context) {
@@ -139,11 +195,11 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            );
+            ).animateOnPress();
           });
         },
       ),
-    );
+    ).animateOnPageLoad(filterAnimation);
   }
 
   Widget _buildSectionTitle(BuildContext context) {
@@ -331,7 +387,7 @@ class HomeScreen extends StatelessWidget {
                       end: route.endStopName ?? 'End',
                       duration: "${route.duration ?? '0'} mins",
                       stops: "${route.totalStops ?? '0'} stops",
-                    );
+                    ).animateOnPageLoad(routeCardAnimation).animateOnPress();
                   },
                 ),
               ),
@@ -397,20 +453,25 @@ class RouteCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFFD166),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    routeName,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                Obx(
+                  () => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ThemeModeController.isLightTheme.value
+                          ? Color(0xFFFFD166)
+                          : Colors.amber,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      routeName,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
+
                 Text(
                   price,
                   style: TextStyle(

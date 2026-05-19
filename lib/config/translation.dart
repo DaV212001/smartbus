@@ -29,9 +29,6 @@ class AppTranslations extends Translations {
       'no_trips_yet': 'No trips yet',
       'no_trips_description':
           'You haven\'t taken any trips yet. Let\'s get moving!',
-      'no_routes_yet': 'No routes yet',
-      'no_routes_found':
-          'No routes found on the server, please check back later.',
       'refresh': 'Refresh',
       'subscribe_route': 'Subscribe to Route',
       'unnamed_stop': 'Unnamed Stop',
@@ -168,6 +165,17 @@ class AppTranslations extends Translations {
       'bottom_nav_alerts': 'Alerts',
       'bottom_nav_profile': 'Profile',
 
+      // Voice Search
+      'voice_search_prompt': 'Tap the mic and say your route',
+      'listening': 'Listening...',
+      'processing_speech': 'Searching for your route...',
+      'mic_permission_denied': 'Microphone permission is required for voice search.',
+      'speech_not_understood': 'Could not understand that. Please try again.',
+      'voice_search': 'Voice Search',
+      'speak_now': 'Speak now',
+      'switch_to_amharic': 'Switch to Amharic',
+      'switch_to_english': 'Switch to English',
+
       // Route Detail Screen
       'route_details': 'Route Details',
       'route_details_not_found': 'Route details not found',
@@ -232,7 +240,6 @@ class AppTranslations extends Translations {
       'no_trips_yet': 'ጉዞ የለም',
       'no_trips_description': 'እስካሁን ምንም ጉዞ አልወሰድህም። እንጀምር!',
       'no_routes_yet': 'የተመዘገቡ መስመሮች የሉም',
-      'no_routes_found': 'ሰርቨር ላይ የተመዘገበ መስመር አልተገኘም። እባክዎ ቆይተዉ በድጋሜ ይሞክሩ።',
       'refresh': 'በድጋሜ ይሞክሩ',
       'subscribe_route': 'በዚህ መስመር ላይ ይመዝገቡ',
       'unnamed_stop': 'ያልተሰየመ መደብ',
@@ -363,6 +370,17 @@ class AppTranslations extends Translations {
       'bottom_nav_wallet': 'ዋሌት',
       'bottom_nav_alerts': 'ማሳወቂያዎች',
       'bottom_nav_profile': 'መገለጫ',
+
+      // Voice Search
+      'voice_search_prompt': 'ማይክሮፎኑን ጫን እና መስመርዎን ይናገሩ',
+      'listening': 'በማዳመጥ ላይ...',
+      'processing_speech': 'መስመርዎን በመፈለግ ላይ...',
+      'mic_permission_denied': 'ለድምፅ ፍለጋ የማይክሮፎን ፈቃድ ያስፈልጋል።',
+      'speech_not_understood': 'ሊረዳ አልቻለም። እባክዎ እንደገና ይሞክሩ።',
+      'voice_search': 'ድምፅ ፍለጋ',
+      'speak_now': 'አሁን ይናገሩ',
+      'switch_to_amharic': 'ወደ አማርኛ ቀይር',
+      'switch_to_english': 'ወደ እንግሊዝኛ ቀይር',
 
       // Route Detail Screen
       'route_details': 'የመስመር ዝርዝሮች',

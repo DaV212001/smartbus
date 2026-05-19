@@ -117,7 +117,7 @@ class RouteController extends GetxController {
     } else {
       isLoadingMore.value = true;
     }
-
+    final appLocale = Get.locale?.languageCode ?? 'en';
     await DioService.dioGet(
       path:
           '/v1/routes?page=$page&limit=$limit&sortBy=${currentSortBy.value}&sortOrder=${currentSortOrder.value}',
@@ -130,6 +130,8 @@ class RouteController extends GetxController {
       options: dio_lib.Options(
         headers: {
           'Accept': 'application/json',
+          "Accept-Language": appLocale,
+
           'Authorization': 'Bearer ${ConfigPreference.getAccessToken()}',
         },
       ),
@@ -212,18 +214,24 @@ class RouteController extends GetxController {
 
     // Build query map dynamically (only include non-empty values)
     final Map<String, String> params = {};
-    if (searchKeyword.value.isNotEmpty) params['q'] = searchKeyword.value;
-    if (searchDeparture.value.isNotEmpty)
+    if (searchKeyword.value.isNotEmpty) {
+      params['q'] = searchKeyword.value;
+    }
+    if (searchDeparture.value.isNotEmpty) {
       params['departure'] = searchDeparture.value;
-    if (searchDestination.value.isNotEmpty)
+    }
+    if (searchDestination.value.isNotEmpty) {
       params['destination'] = searchDestination.value;
-
+    }
+    final appLocale = Get.locale?.languageCode ?? 'en';
     await DioService.dioGet(
-      path: '/v1/routes/search',
+      path:
+          '/v1/routes/search?q=${searchKeyword.value}&departure=${searchDeparture.value}&destination=${searchDestination.value}',
       queryParameters: params,
       options: dio_lib.Options(
         headers: {
           'Accept': 'application/json',
+          'Accept-Language': appLocale,
           'Authorization': 'Bearer ${ConfigPreference.getAccessToken()}',
         },
       ),
@@ -233,7 +241,7 @@ class RouteController extends GetxController {
         searchResults.value = items.map((e) => Route.fromJson(e)).toList();
 
         // Dynamic client sorting
-        applyClientSortToSearchResults();
+        _applyClientSortToSearchResults();
 
         isLoading.value = false;
         searchStatus.value = searchResults.isEmpty
@@ -250,8 +258,12 @@ class RouteController extends GetxController {
     );
   }
 
+  void sortSearchResults() {
+    _applyClientSortToSearchResults();
+  }
+
   /// Dynamic client-side sorting since backend fields 'price' & 'duration' are computed
-  void applyClientSortToSearchResults() {
+  void _applyClientSortToSearchResults() {
     final sortBy = currentSortBy.value;
     final isAsc = currentSortOrder.value == 'asc';
 
@@ -280,6 +292,13 @@ class RouteController extends GetxController {
     detailsError.value = null;
     await DioService.dioGet(
       path: '/v1/routes/$id',
+      options: dio_lib.Options(
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ConfigPreference.getAccessToken()}',
+          'Accept-Language': Get.locale?.languageCode ?? 'en',
+        },
+      ),
       onSuccess: (response) {
         selectedRouteDetails.value = Route.fromJson(response.data['data']);
         isLoading.value = false;

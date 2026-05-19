@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -6,9 +7,50 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../controllers/ticket_controller.dart';
 import '../models/ticket.dart';
+import '../utils/animations.dart';
 import '../utils/templates/loaded_widgets_template.dart';
 import '../utils/wrappers/shimmer_wrapper.dart';
 import 'ticket_detail_screen.dart';
+
+final ticketCardAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    ScaleEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: const Offset(0.95, 0.95),
+      end: const Offset(1.0, 1.0),
+    ),
+  ],
+);
+
+final ticketHistoryAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 500),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    MoveEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 500),
+      begin: const Offset(0.0, 20.0),
+      end: const Offset(0.0, 0.0),
+    ),
+  ],
+);
 
 class TicketScreen extends StatelessWidget {
   const TicketScreen({super.key});
@@ -164,9 +206,9 @@ class TicketScreen extends StatelessWidget {
                       if (controller.activeTicket.value != null)
                         ActiveTicketSection(
                           ticket: controller.activeTicket.value!,
-                        )
+                        ).animateOnPageLoad(ticketCardAnimation).animateOnPress()
                       else
-                        const NoActiveTicketSection(),
+                        const NoActiveTicketSection().animateOnPageLoad(ticketCardAnimation),
                       HistorySection(history: controller.ticketHistory),
                     ],
                   ),
@@ -506,7 +548,7 @@ class HistorySection extends StatelessWidget {
                 t.purchasedAt.toString(),
                 t.status,
                 _getStatusColor(t.status),
-              ),
+              ).animateOnPageLoad(ticketHistoryAnimation).animateOnPress(),
             ),
         ],
       ),

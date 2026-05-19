@@ -170,11 +170,28 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       }),
       bottomNavigationBar: Obx(() {
         final route = routeController.selectedRouteDetails.value;
+
+        // Calculate dynamic fare based on selected stops
+        double displayFare = route?.price ?? 0.0;
+        if (route != null &&
+            route.fares != null &&
+            selectedFromStopId.value.isNotEmpty &&
+            selectedToStopId.value.isNotEmpty) {
+          final fareMatch = route.fares!.firstWhereOrNull(
+            (f) =>
+                f.fromStopId == selectedFromStopId.value &&
+                f.toStopId == selectedToStopId.value,
+          );
+          if (fareMatch != null) {
+            displayFare = fareMatch.amount ?? displayFare;
+          }
+        }
+
         return ActionBar(
           routeId: route?.id?.toString() ?? args['routeId']?.toString() ?? '',
           boardingStopId: selectedFromStopId.value,
           dropoffStopId: selectedToStopId.value,
-          fare: route?.price?.toStringAsFixed(2) ?? '0.00',
+          fare: displayFare.toStringAsFixed(2),
         );
       }),
     );
@@ -317,7 +334,10 @@ class ActiveTripCard extends StatelessWidget {
             icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
             label: Text(
               "request_weraj".tr,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -511,7 +531,10 @@ class RouteTimeline extends StatelessWidget {
                   stopName ?? 'stop'.tr + ' ${index + 1}',
                   isLast
                       ? ''
-                      : 'to_next_stop'.trParams({'distance': '${(distanceToNext / 1000).toStringAsFixed(1)}km'}),
+                      : 'to_next_stop'.trParams({
+                          'distance':
+                              '${(distanceToNext / 1000).toStringAsFixed(1)}km',
+                        }),
                   isLast ? '' : '$durationToNext ' + 'min_unit'.tr,
                   true,
                   !isLast,

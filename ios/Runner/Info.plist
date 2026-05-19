@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SmartBus needs microphone access to let you search for routes by voice.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SmartBus uses on-device speech recognition to find routes from your voice commands.</string>
 </dict>
 </plist>

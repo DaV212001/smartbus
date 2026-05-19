@@ -145,7 +145,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
         geoPoints.first,
         markerIcon: MarkerIcon(
           iconWidget: _buildMarkerLabel(
-            widget.route.stops?.first.nameEn ?? 'Start',
+            widget.route.stops?.first.name ?? 'Start',
             maincolor,
           ),
         ),
@@ -156,7 +156,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
         geoPoints.last,
         markerIcon: MarkerIcon(
           iconWidget: _buildMarkerLabel(
-            widget.route.stops?.last.nameEn ?? 'End',
+            widget.route.stops?.last.name ?? 'End',
             Colors.black,
           ),
         ),
@@ -224,7 +224,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
   GeoPoint? _lastMarkerPoint;
 
   Future<void> zoomToStop(Stop stop, bool isDestination) async {
-    Logger().d(stop.nameEn);
+    Logger().d(stop.name);
     if (stop.latitude == null || stop.longitude == null) return;
 
     GeoPoint point = GeoPoint(
@@ -306,7 +306,7 @@ class RouteMapPreviewState extends State<RouteMapPreview> {
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
                   child: Text(
-                    stop.nameEn ?? 'Stop',
+                    stop.name.isEmpty ? 'Stop' : stop.name,
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,

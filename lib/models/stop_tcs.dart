@@ -34,8 +34,8 @@ class Stop {
     // List<dynamic> names = (json['names'] as List);
     return Stop(
       id: json['id'],
-      nameEn: json['name']['en'] ?? '',
-      nameAm: json['name']['am'] ?? '',
+      nameEn: json['name'],
+      nameAm: json['name'],
       sequence: json['sequence'],
       distanceToNext: double.tryParse((json['distanceToNext']).toString()),
       durationFromPrevious: double.tryParse(
@@ -51,10 +51,10 @@ class Stop {
   }
 
   String get name {
-    if (Get.locale!.languageCode == 'en') {
-      return nameEn!;
+    if (Get.locale?.languageCode == 'en') {
+      return nameEn ?? '';
     } else {
-      return nameAm!;
+      return nameAm ?? nameEn ?? '';
     }
   }
 }

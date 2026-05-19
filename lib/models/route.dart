@@ -19,6 +19,7 @@ class Route {
   final String? endStopName;
   final List<Stop>? stops;
   final List<Driver>? drivers;
+  final List<Fare>? fares;
 
   const Route({
     this.nameAm,
@@ -36,6 +37,7 @@ class Route {
     this.endStopName,
     this.stops,
     this.drivers,
+    this.fares,
   });
 
   static Route sampleRoute = const Route(
@@ -74,8 +76,8 @@ class Route {
 
     return Route(
       id: json['id']?.toString(),
-      nameEn: json['name']['en'] ?? json['nameEn'],
-      nameAm: json['name']['am'] ?? json['nameAm'],
+      nameEn: json['name'],
+      nameAm: json['name'],
       routeNumber: json['routeNumber'],
       description: json['description'],
       price: convertedPrice,
@@ -104,6 +106,9 @@ class Route {
       drivers: ((json['drivers'] ?? []) as List)
           .map((driver) => Driver.fromJson(driver))
           .toList(),
+      fares: ((json['fares'] ?? []) as List)
+          .map((fare) => Fare.fromJson(fare))
+          .toList(),
     );
   }
 
@@ -113,5 +118,33 @@ class Route {
     } else {
       return nameAm ?? nameEn ?? 'N/A';
     }
+  }
+}
+
+class Fare {
+  final String? fromStopId;
+  final String? toStopId;
+  final int? fromStopSequence;
+  final int? toStopSequence;
+  final double? amount;
+
+  Fare({
+    this.fromStopId,
+    this.toStopId,
+    this.fromStopSequence,
+    this.toStopSequence,
+    this.amount,
+  });
+
+  factory Fare.fromJson(Map<String, dynamic> json) {
+    return Fare(
+      fromStopId: json['fromStopId'],
+      toStopId: json['toStopId'],
+      fromStopSequence: json['fromStopSequence'],
+      toStopSequence: json['toStopSequence'],
+      amount: json['amount'] is num
+          ? json['amount'].toDouble()
+          : double.tryParse(json['amount']?.toString() ?? ''),
+    );
   }
 }

@@ -1,13 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:smartbus/utils/wrappers/shimmer_wrapper.dart';
 
 import '../controllers/wallet_controller.dart';
 import '../models/transaction.dart';
+import '../utils/animations.dart';
 import '../utils/api_call_status.dart';
 import '../utils/templates/loaded_widgets_template.dart';
 import '../widgets/animated_widgets/loading_animation_button.dart';
+
+final walletCardAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    ScaleEffect(
+      curve: Curves.easeInOut,
+      delay: Duration.zero,
+      duration: const Duration(milliseconds: 600),
+      begin: const Offset(0.95, 0.95),
+      end: const Offset(1.0, 1.0),
+    ),
+  ],
+);
+
+final walletActivityHeaderAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 500),
+      begin: 0.0,
+      end: 1.0,
+    ),
+  ],
+);
+
+final walletTransactionItemAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 500),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    MoveEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 500),
+      begin: const Offset(0.0, 20.0),
+      end: const Offset(0.0, 0.0),
+    ),
+  ],
+);
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -169,7 +224,7 @@ class WalletScreen extends StatelessWidget {
                         balance: controller.balance.value,
                         onAddFunds: () =>
                             _showAddFundsDialog(context, controller),
-                      ),
+                      ).animateOnPageLoad(walletCardAnimation),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -183,7 +238,7 @@ class WalletScreen extends StatelessWidget {
                             color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
-                      ),
+                      ).animateOnPageLoad(walletActivityHeaderAnimation),
                       TransactionList(transactions: controller.transactions),
                       const SizedBox(height: 20),
                     ],
@@ -269,7 +324,7 @@ class BalanceCard extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             ),
-          ),
+          ).animateOnPress(),
         ],
       ),
     );
@@ -295,7 +350,7 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text('cancel'.tr),
-        ),
+        ).animateOnPress(),
         Obx(() {
           final theme = Theme.of(context);
           final isLoading =
@@ -329,7 +384,7 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
               }
             },
             child: Text('add'.tr),
-          );
+          ).animateOnPress();
         }),
       ],
     ),
@@ -364,7 +419,9 @@ class TransactionList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: transactions.map((tx) {
-          return TransactionItem(transaction: tx);
+          return TransactionItem(
+            transaction: tx,
+          ).animateOnPageLoad(walletTransactionItemAnimation);
         }).toList(),
       ),
     );

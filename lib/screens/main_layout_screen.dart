@@ -49,7 +49,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         inactiveColorPrimary: const Color(0xFF64748B),
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(LucideIcons.settings),
+        icon: const Icon(LucideIcons.user),
         title: 'bottom_nav_profile'.tr,
         activeColorPrimary: Theme.of(context).primaryColor,
         inactiveColorPrimary: const Color(0xFF64748B),

@@ -64,7 +64,7 @@ class TripHistoryCard extends StatelessWidget {
                               color: Theme.of(context).colorScheme.primary,
                             ),
                             Text(
-                              trip.departureStop!.nameEn!,
+                              trip.departureStop!.name,
                               style: const TextStyle(fontSize: 13),
                             ),
                             Text(
@@ -109,7 +109,7 @@ class TripHistoryCard extends StatelessWidget {
                               color: Theme.of(context).colorScheme.primary,
                             ),
                             Text(
-                              trip.destinationStop!.nameEn!,
+                              trip.destinationStop!.name,
                               style: const TextStyle(fontSize: 13),
                             ),
                             Text(

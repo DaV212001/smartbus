@@ -92,3 +92,54 @@ class TiltEffect extends Effect<Offset> {
     );
   }
 }
+
+extension BounceWidgetExtension on Widget {
+  Widget animateOnPress() {
+    return _BounceOnPress(child: this);
+  }
+}
+
+class _BounceOnPress extends StatefulWidget {
+  final Widget child;
+  const _BounceOnPress({required this.child});
+
+  @override
+  State<_BounceOnPress> createState() => _BounceOnPressState();
+}
+
+class _BounceOnPressState extends State<_BounceOnPress>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _controller.forward(),
+      onPointerUp: (_) => _controller.reverse(),
+      onPointerCancel: (_) => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: widget.child,
+      ),
+    );
+  }
+}
