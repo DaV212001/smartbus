@@ -3,10 +3,31 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:smartbus/controllers/theme_mode_controller.dart';
 
+import '../controllers/intelligence_controller.dart';
 import '../controllers/route_controller.dart';
 import '../utils/animations.dart';
 import '../utils/templates/loaded_widgets_template.dart';
 import '../utils/wrappers/shimmer_wrapper.dart';
+
+final insightAnimation = AnimationInfo(
+  trigger: AnimationTrigger.onPageLoad,
+  effects: [
+    FadeEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 50),
+      duration: const Duration(milliseconds: 400),
+      begin: 0.0,
+      end: 1.0,
+    ),
+    MoveEffect(
+      curve: Curves.easeInOut,
+      delay: const Duration(milliseconds: 50),
+      duration: const Duration(milliseconds: 400),
+      begin: const Offset(0.0, -20.0),
+      end: const Offset(0.0, 0.0),
+    ),
+  ],
+);
 
 final routeCardAnimation = AnimationInfo(
   trigger: AnimationTrigger.onPageLoad,
@@ -66,13 +87,14 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routeController = Get.put(RouteController());
+    final routeController = Get.find<RouteController>();
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(context),
+            _buildIntelligenceInsight(context),
             _buildSearchBar(context),
             _buildFilters(context),
             _buildSectionTitle(context),
@@ -81,6 +103,97 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildIntelligenceInsight(BuildContext context) {
+    final intel = Get.find<IntelligenceController>();
+    final theme = Theme.of(context);
+
+    return Obx(() {
+      // Don't show if there's no advice (e.g., brand new user)
+      if (intel.travelAdvice.value.isEmpty) return const SizedBox.shrink();
+
+      String personaKey;
+      IconData personaIcon;
+      switch (intel.userPersona.value) {
+        case UserPersona.commuter:
+          personaKey = 'persona_commuter';
+          personaIcon = Icons.commute;
+          break;
+        case UserPersona.explorer:
+          personaKey = 'persona_explorer';
+          personaIcon = Icons.explore;
+          break;
+        case UserPersona.nightOwl:
+          personaKey = 'persona_nightowl';
+          personaIcon = Icons.nightlight_round;
+          break;
+        case UserPersona.occasional:
+          personaKey = 'persona_occasional';
+          personaIcon = Icons.directions_bus;
+          break;
+      }
+
+      return Container(
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(personaIcon, size: 16, color: theme.primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  personaKey.tr,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    "AI",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      // fontWeight: FontWeight.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              intel.travelAdvice.value,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.4,
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                  alpha: 0.9,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ).animateOnPageLoad(insightAnimation);
+    });
   }
 
   Widget _buildHeader(BuildContext context) {

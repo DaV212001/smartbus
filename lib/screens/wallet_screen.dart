@@ -334,16 +334,52 @@ class BalanceCard extends StatelessWidget {
 void _showAddFundsDialog(BuildContext context, WalletController controller) {
   final amountController = TextEditingController();
   controller.prepareNewTopUp();
+  final suggestedAmounts = controller.getSuggestedTopUpAmounts();
+
   Get.dialog(
     AlertDialog(
       title: Text('add_funds'.tr),
-      content: TextField(
-        controller: amountController,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          hintText: 'enter_amount'.tr,
-          suffixText: 'ETB',
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (suggestedAmounts.isNotEmpty) ...[
+            Text(
+              'suggested_for_you'.tr,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: suggestedAmounts.map((amount) {
+                return ActionChip(
+                  label: Text('${amount.toStringAsFixed(0)} ETB'),
+                  onPressed: () {
+                    amountController.text = amount.toStringAsFixed(0);
+                  },
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.1),
+                  side: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
+          TextField(
+            controller: amountController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: 'enter_amount'.tr,
+              suffixText: 'ETB',
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
       ),
       actions: [
         TextButton(
@@ -359,7 +395,7 @@ void _showAddFundsDialog(BuildContext context, WalletController controller) {
               width: 100,
               height: 38,
               color: theme.primaryColor,
-              borderColor: Colors.amber,
+              borderColor: Colors.white,
               borderRadius: 8.0,
               borderWidth: 3.0,
               onTap: () {},

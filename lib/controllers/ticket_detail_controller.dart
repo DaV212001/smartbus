@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' as dio_lib;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/dio_config.dart';
@@ -15,6 +16,7 @@ class TicketDetailController extends GetxController {
   // Reactive state trackers
   final detailStatus = ApiCallStatus.holding.obs;
   final detailError = Rxn<ErrorData>();
+  final isRequestingDropSignal = false.obs;
 
   Future<void> fetchTicketDetail(String id) async {
     isLoading.value = true;
@@ -37,9 +39,46 @@ class TicketDetailController extends GetxController {
     );
   }
 
+  Future<bool> requestDropSignal(String id) async {
+    isRequestingDropSignal.value = true;
+    bool success = false;
+    await DioService.dioPost(
+      path: '/v1/tickets/$id/drop-signal',
+      data: {},
+      onSuccess: (response) {
+        success = true;
+        _fetchTicketDetailSilently(id);
+        Get.snackbar(
+          'success'.tr,
+          response.data['message'] ?? 'Drop signal sent successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE8F5E9),
+          colorText: const Color(0xFF2E7D32),
+        );
+      },
+      onFailure: (error, response) async {
+        _handleError(error, response);
+      },
+    );
+    isRequestingDropSignal.value = false;
+    return success;
+  }
+
+  Future<void> _fetchTicketDetailSilently(String id) async {
+    await DioService.dioGet(
+      path: '/v1/tickets/$id',
+      onSuccess: (response) {
+        ticket.value = Ticket.fromJson(response.data['data']);
+      },
+      onFailure: (error, response) {
+        // Silently ignore background fetch failure
+      },
+    );
+  }
+
   void _handleError(dynamic error, dynamic response) {
     isLoading.value = false;
-    String errorMsg = "An error occurred while fetching ticket details";
+    String errorMsg = "An error occurred while processing your request";
 
     if (error is dio_lib.DioException) {
       errorMsg = DioConfig.convertDioError(error);

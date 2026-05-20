@@ -7,10 +7,10 @@ import '../config/dio_config.dart';
 import '../config/storage_config.dart';
 import '../models/transaction.dart';
 import '../screens/chapa_payment_screen.dart';
-import '../utils/templates/dio_template.dart';
 import '../utils/api_call_status.dart';
 import '../utils/error_data.dart';
 import '../utils/error_utils.dart';
+import '../utils/templates/dio_template.dart';
 
 class WalletController extends GetxController {
   final isLoading = false.obs;
@@ -153,7 +153,9 @@ class WalletController extends GetxController {
         }
 
         final dynamic resData = response.data['data'] ?? response.data;
-        final String? paymentUrl = resData != null ? resData['paymentUrl'] : null;
+        final String? paymentUrl = resData != null
+            ? resData['paymentUrl']
+            : null;
 
         if (paymentUrl != null && paymentUrl.isNotEmpty) {
           final bool? isPaymentSuccess = await Get.to<bool>(
@@ -215,5 +217,35 @@ class WalletController extends GetxController {
       return message.join('\n');
     }
     return message.toString();
+  }
+
+  /// AI Feature: Returns the most frequent top-up amounts from history
+  List<double> getSuggestedTopUpAmounts() {
+    if (transactions.isEmpty) return [25.0, 50.0, 100.0];
+
+    final topups = transactions
+        .where((tx) => tx.transactionType == WalletTransactionType.TOPUP)
+        .map((tx) => tx.amount)
+        .toList();
+
+    if (topups.isEmpty) return [25.0, 50.0, 100.0];
+
+    // Count frequencies
+    final counts = <double, int>{};
+    for (var amount in topups) {
+      counts[amount] = (counts[amount] ?? 0) + 1;
+    }
+
+    // Sort by frequency
+    final sortedAmounts = counts.keys.toList()
+      ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+
+    // Return top 3 or default if less than 3
+    final result = sortedAmounts.take(3).toList();
+    while (result.length < 3) {
+      final last = result.isEmpty ? 50.0 : result.last * 2;
+      result.add(last);
+    }
+    return result..sort();
   }
 }

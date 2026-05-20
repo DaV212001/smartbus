@@ -15,6 +15,10 @@ import 'package:smartbus/screens/signup_screen.dart';
 import 'package:smartbus/screens/verify_otp_screen.dart';
 
 import 'controllers/user_controller.dart';
+import 'controllers/intelligence_controller.dart';
+import 'controllers/ticket_controller.dart';
+import 'controllers/wallet_controller.dart';
+import 'controllers/route_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +36,10 @@ class MyApp extends StatelessWidget {
     Get.put(ThemeModeController(context));
     Get.put(AuthController());
     Get.put(UserController());
+    Get.put(TicketController());
+    Get.put(WalletController());
+    Get.put(RouteController());
+    Get.put(IntelligenceController());
 
     return Obx(
       () => ScreenUtilInit(

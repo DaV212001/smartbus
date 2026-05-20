@@ -78,6 +78,12 @@ class AppTranslations extends Translations {
       'filter_price_high': 'Price (High)',
       'filter_duration': 'Duration',
       'available_routes': 'Available Routes',
+      'suggested_for_you': 'Suggested for you',
+      'smart_insight': 'Smart Insight',
+      'persona_commuter': 'Daily Commuter',
+      'persona_explorer': 'City Explorer',
+      'persona_occasional': 'Occasional Traveler',
+      'persona_nightowl': 'Night Owl',
 
       // Wallet Screen
       'recent_activity': 'Recent Activity',
@@ -101,7 +107,8 @@ class AppTranslations extends Translations {
       'tx_status_reversed': 'Reversed',
       'tx_status_unknown': 'Unknown',
       'cancel_payment_title': 'Cancel Payment',
-      'cancel_payment_message': 'Are you sure you want to cancel the payment? If you have already paid, please wait a few seconds for the receipt page to load.',
+      'cancel_payment_message':
+          'Are you sure you want to cancel the payment? If you have already paid, please wait a few seconds for the receipt page to load.',
       'yes_cancel': 'Yes, Cancel',
       'no': 'No',
       'payment_checkout': 'Payment Checkout',
@@ -136,6 +143,8 @@ class AppTranslations extends Translations {
       'purchased_on': 'Purchased On',
       'expires_at_label': 'Expires At',
       'request_weraj': 'Request Weraj (Drop-off)',
+      'requesting_weraj': 'Requesting Weraj...',
+      'success': 'Success',
 
       // Settings Screen
       'light': 'Light',
@@ -174,7 +183,8 @@ class AppTranslations extends Translations {
       'voice_search_prompt': 'Tap the mic and say your route',
       'listening': 'Listening...',
       'processing_speech': 'Searching for your route...',
-      'mic_permission_denied': 'Microphone permission is required for voice search.',
+      'mic_permission_denied':
+          'Microphone permission is required for voice search.',
       'speech_not_understood': 'Could not understand that. Please try again.',
       'voice_search': 'Voice Search',
       'speak_now': 'Speak now',
@@ -289,6 +299,12 @@ class AppTranslations extends Translations {
       'filter_price_high': 'ዋጋ (ከፍተኛ)',
       'filter_duration': 'ቆይታ',
       'available_routes': 'የሚገኙ መስመሮች',
+      'suggested_for_you': 'ለእርስዎ የቀረበ',
+      'smart_insight': 'ዘመናዊ ግንዛቤ',
+      'persona_commuter': 'የየቀን ተጓዥ',
+      'persona_explorer': 'ከተማ አሳሽ',
+      'persona_occasional': 'አልፎ አልፎ ተጓዥ',
+      'persona_nightowl': 'የምሽት ተጓዥ',
 
       // Wallet Screen
       'recent_activity': 'የቅርብ ጊዜ እንቅስቃሴዎች',
@@ -312,7 +328,8 @@ class AppTranslations extends Translations {
       'tx_status_reversed': 'ተመልሷል',
       'tx_status_unknown': 'ያልታወቀ',
       'cancel_payment_title': 'ክፍያውን ይሰርዙ',
-      'cancel_payment_message': 'ክፍያውን ለመሰረዝ እርግጠኛ ነዎት? ቀደም ብለው ከከፈሉ እባክዎ ደረሰኙ እስኪጫን ጥቂት ሰኮንዶች ይጠብቁ።',
+      'cancel_payment_message':
+          'ክፍያውን ለመሰረዝ እርግጠኛ ነዎት? ቀደም ብለው ከከፈሉ እባክዎ ደረሰኙ እስኪጫን ጥቂት ሰኮንዶች ይጠብቁ።',
       'yes_cancel': 'አዎ፣ ሰርዝ',
       'no': 'አይ',
       'payment_checkout': 'ክፍያ ማጠናቀቂያ',
@@ -347,6 +364,8 @@ class AppTranslations extends Translations {
       'purchased_on': 'የተገዛበት ቀን',
       'expires_at_label': 'ጊዜው የሚያበቃበት ቀን',
       'request_weraj': 'ወራጅ ጠይቅ (መውረጃ)',
+      'requesting_weraj': 'ወራጅ በመጠየቅ ላይ...',
+      'success': 'ተሳክቷል',
 
       // Settings Screen
       'light': 'ብርሃን',

@@ -8,6 +8,7 @@ import '../controllers/ticket_detail_controller.dart';
 import '../models/ticket.dart';
 import '../utils/templates/loaded_widgets_template.dart';
 import '../utils/wrappers/shimmer_wrapper.dart';
+import '../widgets/animated_widgets/loading_animation_button.dart';
 
 class TicketDetailScreen extends StatelessWidget {
   TicketDetailScreen({super.key});
@@ -444,37 +445,63 @@ class TicketDetailScreen extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context) {
-    final theme = Theme.of(context);
     final ticket = controller.ticket.value;
+    final isRequesting = controller.isRequestingDropSignal.value;
+
     return Column(
       children: [
         if (ticket?.status == 'ACTIVE')
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
-            label: Text(
-              'request_weraj'.tr,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-          ),
+          isRequesting
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: LoadingAnimatedButton(
+                    width: MediaQuery.of(context).size.width - 40,
+                    height: 48,
+                    color: Colors.red,
+                    borderColor: Colors.red.withOpacity(0.2),
+                    borderRadius: 30.0,
+                    borderWidth: 2.0,
+                    onTap: () {},
+                    child: Text(
+                      'requesting_weraj'.tr,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                )
+              : ElevatedButton.icon(
+                  onPressed: () {
+                    if (ticket?.id != null) {
+                      controller.requestDropSignal(ticket!.id);
+                    }
+                  },
+                  icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
+                  label: Text(
+                    'request_weraj'.tr,
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                ),
         const SizedBox(height: 12),
-        // OutlinedButton.icon(
-        //   onPressed: () {},
-        //   icon: const Icon(LucideIcons.helpCircle, size: 18),
-        //   label: const Text('Report an Issue'),
-        //   style: OutlinedButton.styleFrom(
-        //     minimumSize: const Size(double.infinity, 54),
-        //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        //     side: BorderSide(color: theme.dividerColor),
-        //   ),
-        // ),
       ],
     );
   }

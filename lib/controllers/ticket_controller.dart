@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' as dio_lib;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,6 +21,33 @@ class TicketController extends GetxController {
 
   final purchaseStatus = ApiCallStatus.holding.obs;
   final purchaseError = Rxn<ErrorData>();
+
+  final isRequestingDropSignal = false.obs;
+
+  Future<bool> requestDropSignal(String id) async {
+    isRequestingDropSignal.value = true;
+    bool success = false;
+    await DioService.dioPost(
+      path: '/v1/tickets/$id/drop-signal',
+      data: {},
+      onSuccess: (response) {
+        success = true;
+        fetchTickets();
+        Get.snackbar(
+          'success'.tr,
+          response.data['message'] ?? 'Drop signal sent successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFE8F5E9),
+          colorText: const Color(0xFF2E7D32),
+        );
+      },
+      onFailure: (error, response) async {
+        _handleError(error, response);
+      },
+    );
+    isRequestingDropSignal.value = false;
+    return success;
+  }
 
   @override
   void onInit() {
