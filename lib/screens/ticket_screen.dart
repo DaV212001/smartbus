@@ -485,61 +485,6 @@ class HistorySection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Search Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              border: Border.all(color: theme.dividerColor),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  LucideIcons.search,
-                  size: 18,
-                  color: Color(0xFF94A3B8),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'search_tickets'.tr,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 14,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        LucideIcons.listFilter,
-                        size: 14,
-                        color: Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'filter'.tr,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: theme.textTheme.bodySmall?.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           if (history.isEmpty)
             Center(
               child: Padding(
