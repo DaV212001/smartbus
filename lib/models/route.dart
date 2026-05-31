@@ -79,7 +79,7 @@ class Route {
       nameEn: json['name'],
       nameAm: json['name'],
       routeNumber: json['routeNumber'],
-      description: json['description'],
+      // description: json['description']['en'],
       price: convertedPrice,
       isActive: json['isActive'],
       totalStops: json['totalStops'],

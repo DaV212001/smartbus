@@ -20,12 +20,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   );
 
   List<Widget> _buildScreens() {
-    return [
-      const HomeScreen(),
-      const TicketScreen(),
-      const WalletScreen(),
-      SettingsScreen(),
-    ];
+    return [HomeScreen(), TicketScreen(), WalletScreen(), SettingsScreen()];
   }
 
   List<PersistentBottomNavBarItem> _navBarsItems(BuildContext context) {

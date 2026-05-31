@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../config/dio_config.dart';
+import '../constants/assets.dart';
 import '../models/ticket.dart';
 import '../utils/templates/dio_template.dart';
 import '../utils/api_call_status.dart';
@@ -31,9 +32,9 @@ class TicketDetailController extends GetxController {
       },
       onFailure: (error, response) async {
         isLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        detailError.value = err;
         detailStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        detailError.value = err;
         _handleError(error, response);
       },
     );
@@ -76,8 +77,23 @@ class TicketDetailController extends GetxController {
     );
   }
 
+  Future<ErrorData> _getErrorData(Object error) async {
+    try {
+      return await ErrorUtil.getErrorData(error.toString());
+    } catch (_) {
+      return ErrorData(
+        title: 'error'.tr,
+        body: 'unexpected_error'.tr,
+        image: Assets.errorsUnknown,
+        buttonText: 'refresh'.tr,
+      );
+    }
+  }
+
   void _handleError(dynamic error, dynamic response) {
     isLoading.value = false;
+    if (DioConfig.isSessionExpiredError(error)) return;
+
     String errorMsg = "An error occurred while processing your request";
 
     if (error is dio_lib.DioException) {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
@@ -53,11 +55,10 @@ final ticketHistoryAnimation = AnimationInfo(
 );
 
 class TicketScreen extends StatelessWidget {
-  const TicketScreen({super.key});
-
+  TicketScreen({super.key});
+  final controller = Get.put(TicketController());
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(TicketController());
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -205,10 +206,14 @@ class TicketScreen extends StatelessWidget {
                     children: [
                       if (controller.activeTicket.value != null)
                         ActiveTicketSection(
-                          ticket: controller.activeTicket.value!,
-                        ).animateOnPageLoad(ticketCardAnimation).animateOnPress()
+                              ticket: controller.activeTicket.value!,
+                            )
+                            .animateOnPageLoad(ticketCardAnimation)
+                            .animateOnPress()
                       else
-                        const NoActiveTicketSection().animateOnPageLoad(ticketCardAnimation),
+                        const NoActiveTicketSection().animateOnPageLoad(
+                          ticketCardAnimation,
+                        ),
                       HistorySection(history: controller.ticketHistory),
                     ],
                   ),
@@ -337,7 +342,13 @@ class ActiveTicketSection extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: QrImageView(
-                          data: ticket.qrPayload ?? '',
+                          data: ticket.qrPayload != null
+                              ? jsonEncode({
+                                  'payload': ticket.qrPayload,
+                                  'qrPayload': ticket.qrPayload,
+                                  'qrSignature': ticket.qrSignature,
+                                })
+                              : '',
                           version: QrVersions.auto,
                           size: 150.0,
                           eyeStyle: const QrEyeStyle(

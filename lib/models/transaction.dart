@@ -8,13 +8,7 @@ enum WalletTransactionType {
   UNKNOWN,
 }
 
-enum WalletTransactionStatus {
-  PENDING,
-  COMPLETED,
-  FAILED,
-  REVERSED,
-  UNKNOWN,
-}
+enum WalletTransactionStatus { PENDING, COMPLETED, FAILED, REVERSED, UNKNOWN }
 
 class WalletTransaction {
   final String id;
@@ -45,7 +39,7 @@ class WalletTransaction {
       walletId: json['walletId'],
       type: json['type'] ?? '',
       status: json['status'],
-      amount: (json['amount'] is num ? json['amount'].toDouble() / 100 : 0.0),
+      amount: (json['amount'] is num ? json['amount'].toDouble() : 0.0),
       description: json['description'],
       paymentMethod: json['paymentMethod'],
       paymentReference: json['paymentReference'],
@@ -66,7 +60,8 @@ class WalletTransaction {
       default:
         // Retro-compatibility fallback if old values CREDIT/DEBIT are present
         if (type.toUpperCase() == 'CREDIT') return WalletTransactionType.TOPUP;
-        if (type.toUpperCase() == 'DEBIT') return WalletTransactionType.TICKET_PURCHASE;
+        if (type.toUpperCase() == 'DEBIT')
+          return WalletTransactionType.TICKET_PURCHASE;
         return WalletTransactionType.UNKNOWN;
     }
   }
@@ -102,4 +97,3 @@ class WalletTransaction {
     }
   }
 }
-

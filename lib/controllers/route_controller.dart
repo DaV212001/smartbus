@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:dio/dio.dart' as dio_lib;
 import 'package:flutter/widgets.dart' hide Route;
 import 'package:get/get.dart';
+import 'package:smartbus/controllers/theme_mode_controller.dart';
 
 import '../config/dio_config.dart';
 import '../config/storage_config.dart';
+import '../constants/assets.dart';
 import '../models/route.dart';
 import '../utils/api_call_status.dart';
 import '../utils/error_data.dart';
@@ -45,6 +47,7 @@ class RouteController extends GetxController {
     scrollController.addListener(_onScroll);
     loadCachedRoutes();
     fetchRoutes(page: 1);
+    ever(ThemeModeController.languageCode, (c) => fetchRoutes());
   }
 
   @override
@@ -89,6 +92,10 @@ class RouteController extends GetxController {
         final double valA = a.duration ?? 0.0;
         final double valB = b.duration ?? 0.0;
         return isAsc ? valA.compareTo(valB) : valB.compareTo(valA);
+      } else if (sortBy == 'routeNumber') {
+        final numA = a.routeNumber ?? '';
+        final numB = b.routeNumber ?? '';
+        return isAsc ? numA.compareTo(numB) : numB.compareTo(numA);
       }
       return 0;
     });
@@ -100,6 +107,9 @@ class RouteController extends GetxController {
     int page = 1,
     int limit = 20,
   }) async {
+    if (page == 1 && isLoading.value) return;
+    if (page > 1 && isLoadingMore.value) return;
+
     if (sortBy != null) currentSortBy.value = sortBy;
     if (sortOrder != null) currentSortOrder.value = sortOrder;
 
@@ -119,14 +129,13 @@ class RouteController extends GetxController {
     }
     final appLocale = Get.locale?.languageCode ?? 'en';
     await DioService.dioGet(
-      path:
-          '/v1/routes?page=$page&limit=$limit&sortBy=${currentSortBy.value}&sortOrder=${currentSortOrder.value}',
-      // queryParameters: {
-      //   'page': page.toString(),
-      //   'limit': limit.toString(),
-      //   'sortBy': currentSortBy.value,
-      //   'sortOrder': currentSortOrder.value,
-      // },
+      path: '/v1/routes',
+      queryParameters: {
+        'page': page.toString(),
+        'limit': limit.toString(),
+        'sortBy': currentSortBy.value,
+        'sortOrder': currentSortOrder.value,
+      },
       options: dio_lib.Options(
         headers: {
           'Accept': 'application/json',
@@ -172,9 +181,9 @@ class RouteController extends GetxController {
       onFailure: (error, response) async {
         isLoading.value = false;
         isLoadingMore.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        routesError.value = err;
         routesStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        routesError.value = err;
         // Only show full screen error if we don't have any cached routes
         if (routes.isEmpty) {
           _handleError(error, response);
@@ -214,19 +223,12 @@ class RouteController extends GetxController {
 
     // Build query map dynamically (only include non-empty values)
     final Map<String, String> params = {};
-    if (searchKeyword.value.isNotEmpty) {
-      params['q'] = searchKeyword.value;
-    }
-    if (searchDeparture.value.isNotEmpty) {
-      params['departure'] = searchDeparture.value;
-    }
-    if (searchDestination.value.isNotEmpty) {
-      params['destination'] = searchDestination.value;
-    }
+    params['q'] = searchKeyword.value;
+    params['departure'] = searchDeparture.value;
+    params['destination'] = searchDestination.value;
     final appLocale = Get.locale?.languageCode ?? 'en';
     await DioService.dioGet(
-      path:
-          '/v1/routes/search?q=${searchKeyword.value}&departure=${searchDeparture.value}&destination=${searchDestination.value}',
+      path: '/v1/routes/search',
       queryParameters: params,
       options: dio_lib.Options(
         headers: {
@@ -250,16 +252,21 @@ class RouteController extends GetxController {
       },
       onFailure: (error, response) async {
         isLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        searchError.value = err;
         searchStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        searchError.value = err;
         _handleError(error, response);
       },
     );
   }
 
   void sortSearchResults() {
-    _applyClientSortToSearchResults();
+    // Sort whichever list is currently displayed
+    if (searchResults.isNotEmpty) {
+      _applyClientSortToSearchResults();
+    } else {
+      _sortLocalRoutes(currentSortBy.value, currentSortOrder.value);
+    }
   }
 
   /// Dynamic client-side sorting since backend fields 'price' & 'duration' are computed
@@ -306,16 +313,31 @@ class RouteController extends GetxController {
       },
       onFailure: (error, response) async {
         isLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        detailsError.value = err;
         detailsStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        detailsError.value = err;
         _handleError(error, response);
       },
     );
   }
 
+  Future<ErrorData> _getErrorData(Object error) async {
+    try {
+      return await ErrorUtil.getErrorData(error.toString());
+    } catch (_) {
+      return ErrorData(
+        title: 'error'.tr,
+        body: 'unexpected_error'.tr,
+        image: Assets.errorsUnknown,
+        buttonText: 'refresh'.tr,
+      );
+    }
+  }
+
   void _handleError(dynamic error, dynamic response) {
     isLoading.value = false;
+    if (DioConfig.isSessionExpiredError(error)) return;
+
     String errorMsg = "An error occurred";
 
     if (error is dio_lib.DioException) {

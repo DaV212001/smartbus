@@ -45,20 +45,34 @@ class Ticket {
       routeId: json['routeId'],
       boardingStopId: json['boardingStopId'],
       dropoffStopId: json['dropoffStopId'],
-      fareAmount: (json['fareAmount'] is num ? json['fareAmount'].toDouble() : 0.0) / 100,
+      fareAmount: (json['fareAmount'] is num
+          ? json['fareAmount'].toDouble()
+          : 0.0),
       status: json['status'],
       qrPayload: json['qrPayload'],
       qrSignature: json['qrSignature'],
       purchasedAt: DateTime.parse(json['purchasedAt'] ?? json['createdAt']),
-      expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'])
+          : null,
       usedAt: json['usedAt'] != null ? DateTime.parse(json['usedAt']) : null,
-      refundedAt: json['refundedAt'] != null ? DateTime.parse(json['refundedAt']) : null,
+      refundedAt: json['refundedAt'] != null
+          ? DateTime.parse(json['refundedAt'])
+          : null,
       route: json['route'] != null ? Route.fromJson(json['route']) : null,
       boardingStop: json['boardingStop'] != null
-          ? Stop.fromJson(json['boardingStop'], isDeparture: true, isDestination: false)
+          ? Stop.fromJson(
+              json['boardingStop'],
+              isDeparture: true,
+              isDestination: false,
+            )
           : null,
       dropoffStop: json['dropoffStop'] != null
-          ? Stop.fromJson(json['dropoffStop'], isDeparture: false, isDestination: true)
+          ? Stop.fromJson(
+              json['dropoffStop'],
+              isDeparture: false,
+              isDestination: true,
+            )
           : null,
     );
   }

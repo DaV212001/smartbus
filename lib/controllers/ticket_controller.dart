@@ -1,14 +1,17 @@
 import 'package:dio/dio.dart' as dio_lib;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smartbus/config/storage_config.dart';
+import 'package:smartbus/controllers/theme_mode_controller.dart';
 import 'package:uuid/uuid.dart';
 
 import '../config/dio_config.dart';
+import '../constants/assets.dart';
 import '../models/ticket.dart';
-import '../utils/templates/dio_template.dart';
 import '../utils/api_call_status.dart';
 import '../utils/error_data.dart';
 import '../utils/error_utils.dart';
+import '../utils/templates/dio_template.dart';
 
 class TicketController extends GetxController {
   final isLoading = false.obs;
@@ -53,22 +56,30 @@ class TicketController extends GetxController {
   void onInit() {
     super.onInit();
     fetchTickets();
+    ever(ThemeModeController.languageCode, (c) => fetchTickets());
   }
 
   Future<void> fetchTickets() async {
+    if (ticketsStatus.value == ApiCallStatus.loading) return;
+
     isLoading.value = true;
     ticketsStatus.value = ApiCallStatus.loading;
     ticketsError.value = null;
     await DioService.dioGet(
       path: '/v1/tickets',
+      options: dio_lib.Options(
+        headers: {
+          'Authorization': 'Bearer ${ConfigPreference.getAccessToken()}',
+        },
+      ),
       onSuccess: (response) {
         final List items = response.data['data']['items'] ?? [];
         ticketHistory.value = items.map((e) => Ticket.fromJson(e)).toList();
 
         // Filter for active ticket based on status
         activeTicket.value = ticketHistory
-             .where((t) => t.status.toUpperCase() == 'ACTIVE')
-             .firstOrNull;
+            .where((t) => t.status.toUpperCase() == 'ACTIVE')
+            .firstOrNull;
 
         isLoading.value = false;
         if (ticketHistory.isEmpty) {
@@ -79,9 +90,9 @@ class TicketController extends GetxController {
       },
       onFailure: (error, response) async {
         isLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        ticketsError.value = err;
         ticketsStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        ticketsError.value = err;
         _handleError(error, response);
       },
     );
@@ -116,16 +127,32 @@ class TicketController extends GetxController {
         fetchTickets();
       },
       onFailure: (error, response) async {
-        final err = await ErrorUtil.getErrorData(error.toString());
-        purchaseError.value = err;
+        isLoading.value = false;
         purchaseStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        purchaseError.value = err;
         _handleError(error, response);
       },
     );
   }
 
+  Future<ErrorData> _getErrorData(Object error) async {
+    try {
+      return await ErrorUtil.getErrorData(error.toString());
+    } catch (_) {
+      return ErrorData(
+        title: 'error'.tr,
+        body: 'unexpected_error'.tr,
+        image: Assets.errorsUnknown,
+        buttonText: 'refresh'.tr,
+      );
+    }
+  }
+
   void _handleError(dynamic error, dynamic response) {
     isLoading.value = false;
+    if (DioConfig.isSessionExpiredError(error)) return;
+
     String errorMsg = "An error occurred";
 
     if (error is dio_lib.DioException) {

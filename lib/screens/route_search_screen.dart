@@ -20,6 +20,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
   late final SpeechController speechController;
   final departureTextController = TextEditingController();
   final destinationTextController = TextEditingController();
+  final routeNumberTextController = TextEditingController();
 
   Timer? _debounceTimer;
 
@@ -34,6 +35,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
     _debounceTimer?.cancel();
     departureTextController.dispose();
     destinationTextController.dispose();
+    routeNumberTextController.dispose();
     super.dispose();
   }
 
@@ -41,6 +43,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       routeController.searchRoutesAdvanced(
+        q: routeNumberTextController.text.trim(),
         departure: departureTextController.text.trim(),
         destination: destinationTextController.text.trim(),
       );
@@ -181,6 +184,13 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
                 ],
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          _SearchField(
+            icon: Icons.confirmation_number_outlined,
+            hint: "route_number_search".tr,
+            controller: routeNumberTextController,
+            onChanged: (_) => _onSearchChanged(),
           ),
           const SizedBox(height: 16),
           _filters(context),

@@ -65,12 +65,11 @@ final walletTransactionItemAnimation = AnimationInfo(
 );
 
 class WalletScreen extends StatelessWidget {
-  const WalletScreen({super.key});
-
+  WalletScreen({super.key});
+  final controller = Get.put(WalletController());
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final controller = Get.put(WalletController());
 
     return Scaffold(
       appBar: AppBar(
@@ -203,17 +202,11 @@ class WalletScreen extends StatelessWidget {
           errorData: controller.transactionsError.value,
           loadingChild: shimmerLoading(),
           errorChild: null,
-          onReload: () async {
-            await controller.fetchWalletData();
-            await controller.fetchTransactions();
-          },
+          onReload: controller.refreshWallet,
           child:
               // shimmerLoading(),
               RefreshIndicator(
-                onRefresh: () async {
-                  await controller.fetchWalletData();
-                  await controller.fetchTransactions();
-                },
+                onRefresh: controller.refreshWallet,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
@@ -468,21 +461,6 @@ class TransactionItem extends StatelessWidget {
 
   const TransactionItem({super.key, required this.transaction});
 
-  IconData _getIcon(WalletTransactionType type) {
-    switch (type) {
-      case WalletTransactionType.TOPUP:
-        return LucideIcons.arrowDownLeft;
-      case WalletTransactionType.TICKET_PURCHASE:
-        return LucideIcons.ticket;
-      case WalletTransactionType.REFUND:
-        return LucideIcons.rotateCcw;
-      case WalletTransactionType.ADJUSTMENT:
-        return LucideIcons.sliders;
-      case WalletTransactionType.UNKNOWN:
-        return LucideIcons.wallet;
-    }
-  }
-
   String _getLocalizedTypeName(WalletTransactionType type) {
     switch (type) {
       case WalletTransactionType.TOPUP:
@@ -495,21 +473,6 @@ class TransactionItem extends StatelessWidget {
         return 'tx_type_adjustment'.tr;
       case WalletTransactionType.UNKNOWN:
         return 'tx_type_unknown'.tr;
-    }
-  }
-
-  Color _getTypeColor(WalletTransactionType type) {
-    switch (type) {
-      case WalletTransactionType.TOPUP:
-        return const Color(0xFF10B981); // Emerald
-      case WalletTransactionType.TICKET_PURCHASE:
-        return const Color(0xFF3B82F6); // Indigo/Blue
-      case WalletTransactionType.REFUND:
-        return const Color(0xFF06B6D4); // Teal
-      case WalletTransactionType.ADJUSTMENT:
-        return const Color(0xFFF59E0B); // Amber
-      case WalletTransactionType.UNKNOWN:
-        return const Color(0xFF6B7280); // Gray
     }
   }
 
@@ -593,7 +556,6 @@ class TransactionItem extends StatelessWidget {
     final txStatus = transaction.transactionStatus;
     final isCredit = transaction.isCredit;
 
-    final typeColor = _getTypeColor(txType);
     final statusBg = _getStatusBgColor(txStatus);
     final statusText = _getStatusTextColor(txStatus);
 
@@ -678,6 +640,7 @@ class TransactionItem extends StatelessWidget {
 
                   // Date & Payment Method Row
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Icon(
                         LucideIcons.calendar,
@@ -685,11 +648,13 @@ class TransactionItem extends StatelessWidget {
                         color: theme.iconTheme.color?.withValues(alpha: 0.4),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        _formatDateTime(transaction.createdAt),
-                        style: TextStyle(
-                          color: theme.textTheme.bodySmall?.color,
-                          fontSize: 11,
+                      Expanded(
+                        child: Text(
+                          _formatDateTime(transaction.createdAt),
+                          style: TextStyle(
+                            color: theme.textTheme.bodySmall?.color,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                       if (transaction.paymentMethod != null &&

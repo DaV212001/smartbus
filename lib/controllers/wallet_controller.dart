@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart' as dio_lib;
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:smartbus/controllers/theme_mode_controller.dart';
 import 'package:uuid/uuid.dart';
 
 import '../config/dio_config.dart';
 import '../config/storage_config.dart';
+import '../constants/assets.dart';
 import '../models/transaction.dart';
 import '../screens/chapa_payment_screen.dart';
 import '../utils/api_call_status.dart';
@@ -42,11 +44,18 @@ class WalletController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchTransactions();
-    fetchWalletData();
+    refreshWallet();
+    ever(ThemeModeController.languageCode, (c) => refreshWallet());
+  }
+
+  Future<void> refreshWallet() async {
+    await fetchWalletData();
+    await fetchTransactions();
   }
 
   Future<void> fetchWalletData() async {
+    if (balanceStatus.value == ApiCallStatus.loading) return;
+
     isBalanceLoading.value = true;
     balanceStatus.value = ApiCallStatus.loading;
     balanceError.value = null;
@@ -60,9 +69,9 @@ class WalletController extends GetxController {
       ),
       onSuccess: (response) {
         final data = response.data['data'];
-        balance.value =
-            (data['balance'] is num ? data['balance'].toDouble() : 0.0) / 100;
-        final List items = data['transactions'] ?? [];
+        balance.value = (data['balance'] is num
+            ? data['balance'].toDouble()
+            : 0.0);
         // transactions.value = items
         //     .map((e) => WalletTransaction.fromJson(e))
         //     .toList();
@@ -71,15 +80,17 @@ class WalletController extends GetxController {
       },
       onFailure: (error, response) async {
         isBalanceLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        balanceError.value = err;
         balanceStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        balanceError.value = err;
         _handleError(error, response);
       },
     );
   }
 
   Future<void> fetchTransactions() async {
+    if (transactionsStatus.value == ApiCallStatus.loading) return;
+
     isLoading.value = true;
     transactionsStatus.value = ApiCallStatus.loading;
     transactionsError.value = null;
@@ -105,9 +116,9 @@ class WalletController extends GetxController {
       },
       onFailure: (error, response) async {
         isLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        transactionsError.value = err;
         transactionsStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        transactionsError.value = err;
         _handleError(error, response);
       },
     );
@@ -141,7 +152,7 @@ class WalletController extends GetxController {
         },
       ),
       data: {
-        'amount': (amount * 100).toDouble(), // Convert to santim (minor units)
+        'amount': amount, // Convert to santim (minor units)
         'paymentMethod': 'card', // Default payment method
       },
       onSuccess: (response) async {
@@ -158,29 +169,39 @@ class WalletController extends GetxController {
             : null;
 
         if (paymentUrl != null && paymentUrl.isNotEmpty) {
+          // Skip navigation when there is no active MaterialApp overlay
+          // (e.g. headless integration tests).
+          if (Get.context == null) return;
+
           final bool? isPaymentSuccess = await Get.to<bool>(
             () => ChapaPaymentScreen(paymentUrl: paymentUrl),
           );
 
           if (isPaymentSuccess == true) {
-            Get.snackbar('Success', 'Funds added successfully');
+            if (Get.context != null) {
+              Get.snackbar('Success', 'Funds added successfully');
+            }
             _activeIdempotencyKey = null; // Clear on success
             _lastAttemptedAmount = null;
             fetchWalletData();
             fetchTransactions();
           } else {
-            Get.snackbar('Payment', 'Payment not completed or cancelled');
+            if (Get.context != null) {
+              Get.snackbar('Payment', 'Payment not completed or cancelled');
+            }
           }
         } else {
-          Get.snackbar('Error', 'Payment URL not found in response');
+          if (Get.context != null) {
+            Get.snackbar('Error', 'Payment URL not found in response');
+          }
         }
       },
       onFailure: (error, response) async {
         Logger().d(response);
         isWalletLoading.value = false;
-        final err = await ErrorUtil.getErrorData(error.toString());
-        topupError.value = err;
         topupStatus.value = ApiCallStatus.error;
+        final err = await _getErrorData(error);
+        topupError.value = err;
         // Note: We do NOT clear the idempotency key on failure.
         // This allows the next call (retry) to use the same key.
         _handleError(error, response);
@@ -188,8 +209,23 @@ class WalletController extends GetxController {
     );
   }
 
+  Future<ErrorData> _getErrorData(Object error) async {
+    try {
+      return await ErrorUtil.getErrorData(error.toString());
+    } catch (_) {
+      return ErrorData(
+        title: 'error'.tr,
+        body: 'unexpected_error'.tr,
+        image: Assets.errorsUnknown,
+        buttonText: 'refresh'.tr,
+      );
+    }
+  }
+
   void _handleError(dynamic error, dynamic response) {
     isLoading.value = false;
+    if (DioConfig.isSessionExpiredError(error)) return;
+
     String errorMsg = "An error occurred";
 
     if (error is dio_lib.DioException) {

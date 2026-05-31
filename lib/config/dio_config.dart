@@ -1,6 +1,6 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -10,6 +10,23 @@ import '../constants/pages.dart';
 
 class AuthInterceptor extends Interceptor {
   static Future<String?>? _refreshFuture;
+
+  DioException _sessionExpiredException(
+    RequestOptions requestOptions, {
+    Response? response,
+  }) {
+    return DioException(
+      requestOptions: requestOptions,
+      response: response,
+      type: DioExceptionType.unknown,
+      message: 'Session expired. Please log in again.',
+    );
+  }
+
+  Future<void> _redirectToLogin() async {
+    await ConfigPreference.clearTokens();
+    Get.offAllNamed(AppRoutes.loginRoute);
+  }
 
   @override
   void onRequest(
@@ -25,9 +42,8 @@ class AuthInterceptor extends Interceptor {
       Logger().d('Token expired proactive check. Refreshing...');
       final newToken = await _refreshAccessToken();
       if (newToken == null) {
-        await ConfigPreference.clearTokens();
-        Get.offAllNamed(AppRoutes.loginRoute);
-        return;
+        await _redirectToLogin();
+        return handler.reject(_sessionExpiredException(options));
       }
     }
 
@@ -60,9 +76,10 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
       } else {
-        await ConfigPreference.clearTokens();
-        Get.offAllNamed(AppRoutes.loginRoute);
-        return;
+        await _redirectToLogin();
+        return handler.reject(
+          _sessionExpiredException(err.requestOptions, response: err.response),
+        );
       }
     }
     return handler.next(err);
@@ -153,8 +170,17 @@ class LoggingInterceptor extends Interceptor {
 }
 
 class DioConfig {
+  static bool isTestMode = false;
   static PersistCookieJar? cookieJar;
   static Dio? _dioInstance;
+  static Dio? _dioAiInstance;
+
+  /// Clears the Dio singleton. Use in test teardowns to prevent interceptor
+  /// state from leaking across test groups.
+  static void resetDio() {
+    _dioInstance = null;
+    _dioAiInstance = null;
+  }
 
   static Future<Dio> dio() async {
     if (_dioInstance != null) return _dioInstance!;
@@ -174,13 +200,49 @@ class DioConfig {
       ),
     );
 
-    _dioInstance!.interceptors.addAll([
-      // CookieManager(cookieJar!), // 👈 enables cookie/session persistence
-      LoggingInterceptor(),
-      AuthInterceptor(),
-    ]);
+    if (!isTestMode) {
+      _dioInstance!.interceptors.addAll([
+        // CookieManager(cookieJar!), // 👈 enables cookie/session persistence
+        LoggingInterceptor(),
+        AuthInterceptor(),
+      ]);
+    }
 
     return _dioInstance!;
+  }
+
+  static Future<Dio> dioAi() async {
+    if (_dioAiInstance != null) return _dioAiInstance!;
+
+    if (cookieJar == null) {
+      final dir = await getApplicationDocumentsDirectory();
+      cookieJar = PersistCookieJar(
+        storage: FileStorage('${dir.path}/.cookies/'),
+      );
+    }
+
+    _dioAiInstance = Dio(
+      BaseOptions(
+        baseUrl: 'https://text.pollinations.ai',
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 120),
+      ),
+    );
+
+    if (!isTestMode) {
+      _dioAiInstance!.interceptors.addAll([
+        // CookieManager(cookieJar!), // 👈 enables cookie/session persistence
+        LoggingInterceptor(),
+        AuthInterceptor(),
+      ]);
+    }
+
+    return _dioAiInstance!;
+  }
+
+  static bool isSessionExpiredError(Object error) {
+    return error is DioException &&
+        error.message == 'Session expired. Please log in again.';
   }
 
   static String convertDioError(DioException e) {
@@ -203,7 +265,7 @@ class DioConfig {
             'HTTP error ${e.response!.statusCode}: ${e.response!.statusMessage}';
         break;
       case DioExceptionType.unknown:
-        errorMessage = 'Other Dio error occurred';
+        errorMessage = e.message ?? 'Other Dio error occurred';
         break;
       case DioExceptionType.badCertificate:
         errorMessage = 'Bad certificate, try switching devices';

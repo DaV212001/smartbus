@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -110,7 +112,8 @@ class TicketDetailScreen extends StatelessWidget {
           errorData: controller.detailError.value,
           loadingChild: shimmerLoading(),
           errorChild: null,
-          onReload: () => ticketId != null ? controller.fetchTicketDetail(ticketId) : null,
+          onReload: () =>
+              ticketId != null ? controller.fetchTicketDetail(ticketId) : null,
           child: ticket == null
               ? Center(child: Text('ticket_not_found'.tr))
               : RefreshIndicator(
@@ -233,7 +236,13 @@ class TicketDetailScreen extends StatelessWidget {
                   child: Opacity(
                     opacity: isExpired ? 0.3 : 1.0,
                     child: QrImageView(
-                      data: ticket.qrPayload ?? '',
+                      data: ticket.qrPayload != null
+                          ? jsonEncode({
+                              'payload': ticket.qrPayload,
+                              'qrPayload': ticket.qrPayload,
+                              'qrSignature': ticket.qrSignature,
+                            })
+                          : '',
                       version: QrVersions.auto,
                       size: 200.0,
                       eyeStyle: const QrEyeStyle(
@@ -261,7 +270,9 @@ class TicketDetailScreen extends StatelessWidget {
                   ),
                 const SizedBox(height: 20),
                 Text(
-                  'ticket_id_label'.trParams({'id': ticket.id.substring(0, 8).toUpperCase()}),
+                  'ticket_id_label'.trParams({
+                    'id': ticket.id.substring(0, 8).toUpperCase(),
+                  }),
                   style: TextStyle(
                     color: theme.textTheme.bodySmall?.color,
                     fontSize: 12,
@@ -372,10 +383,7 @@ class TicketDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsSection(
-    BuildContext context,
-    Ticket ticket,
-  ) {
+  Widget _buildDetailsSection(BuildContext context, Ticket ticket) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,57 +458,60 @@ class TicketDetailScreen extends StatelessWidget {
 
     return Column(
       children: [
-        if (ticket?.status == 'ACTIVE')
-          isRequesting
-              ? Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: LoadingAnimatedButton(
-                    width: MediaQuery.of(context).size.width - 40,
-                    height: 48,
-                    color: Colors.red,
-                    borderColor: Colors.red.withOpacity(0.2),
-                    borderRadius: 30.0,
-                    borderWidth: 2.0,
-                    onTap: () {},
-                    child: Text(
-                      'requesting_weraj'.tr,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+        // if (ticket?.status == 'ACTIVE')
+        isRequesting
+            ? Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                )
-              : ElevatedButton.icon(
-                  onPressed: () {
-                    if (ticket?.id != null) {
-                      controller.requestDropSignal(ticket!.id);
-                    }
-                  },
-                  icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
-                  label: Text(
-                    'request_weraj'.tr,
-                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                  ],
+                ),
+                child: LoadingAnimatedButton(
+                  width: MediaQuery.of(context).size.width - 40,
+                  height: 48,
+                  color: Colors.red,
+                  borderColor: Colors.red.withOpacity(0.2),
+                  borderRadius: 30.0,
+                  borderWidth: 2.0,
+                  onTap: () {},
+                  child: Text(
+                    'requesting_weraj'.tr,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
                 ),
+              )
+            : ElevatedButton.icon(
+                onPressed: () {
+                  if (ticket?.id != null) {
+                    controller.requestDropSignal(ticket!.id);
+                  }
+                },
+                icon: const Icon(Icons.front_hand, color: Colors.red, size: 18),
+                label: Text(
+                  'request_weraj'.tr,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
         const SizedBox(height: 12),
       ],
     );
@@ -509,7 +520,9 @@ class TicketDetailScreen extends StatelessWidget {
   String _formatDate(dynamic date) {
     if (date == null) return 'N/A';
     try {
-      final DateTime dateTime = date is DateTime ? date : DateTime.parse(date.toString());
+      final DateTime dateTime = date is DateTime
+          ? date
+          : DateTime.parse(date.toString());
       final localizedDate = dateTime.toUtc().add(const Duration(hours: 3));
       return DateFormat('MMM dd, yyyy • HH:mm').format(localizedDate);
     } catch (e) {

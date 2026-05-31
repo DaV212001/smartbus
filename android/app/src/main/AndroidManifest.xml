@@ -1,5 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions for Network & API -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Permissions for QR Scanner -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Permissions for Map & Location -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Permissions for Speech to Text -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Permissions for Notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:label="SmartBus"
         android:name="${applicationName}"

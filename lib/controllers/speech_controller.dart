@@ -105,6 +105,9 @@ class SpeechController extends GetxController {
   }
 
   void _onSpeechDone() {
+    // Guard against multiple calls (e.g. from both onStatus and onResult)
+    if (voiceState.value != VoiceSearchState.listening) return;
+
     if (transcribedText.value.trim().isEmpty) {
       voiceState.value = VoiceSearchState.idle;
       return;
@@ -257,9 +260,8 @@ class SpeechController extends GetxController {
     String? resolvedDep = _resolveOriginalName(departure, routeController);
     String? resolvedDest = _resolveOriginalName(destination, routeController);
 
-    voiceState.value = VoiceSearchState.idle;
-
     if (resolvedDep == null && resolvedDest == null) {
+      voiceState.value = VoiceSearchState.idle;
       Get.snackbar(
         'voice_search'.tr,
         'speech_not_understood'.tr,
@@ -279,6 +281,7 @@ class SpeechController extends GetxController {
         'destination': resolvedDest ?? '',
       },
     );
+    voiceState.value = VoiceSearchState.idle;
   }
 
   String? _resolveOriginalName(
